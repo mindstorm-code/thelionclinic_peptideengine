@@ -5,118 +5,155 @@
 <title>The Lion Clinic — Protocol Wizard OS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root{
-  --void:#0B141F;
-  --panel:#121F2E;
-  --panel-raised:#182838;
-  --hairline:#25384A;
-  --brass:#C9A227;
-  --brass-light:#E8C765;
-  --teal:#4FA39A;
-  --coral:#E2673B;
-  --ivory:#F3EEE2;
-  --muted:#8A94A3;
-  --heart:#E25B74;
+  --regal-navy:#0B1B3D;
+  --void-deep:#050C1C;
+  --panel:#0E2147;
+  --panel-raised:#152C5B;
+  --hairline:#203B70;
+  --gold:#D4AF37;
+  --gold-light:#F3E5AB;
+  --slate:#4A5568;
+  --teal:#10B981;
+  --coral:#EF4444;
+  --pure-white:#FFFFFF;
+  --ivory:#F8FAFC;
+  --muted:#94A3B8;
+  --heart:#EC4899;
 }
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;}
-.app{max-width:1280px;margin:0 auto;padding:30px 20px 80px;}
 
-/* Header */
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;border-bottom:1px solid var(--hairline);padding-bottom:20px;}
-.wordmark{font-family:'Fraunces',serif;font-weight:600;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-light);}
-.hero-title{font-family:'Fraunces',serif;font-weight:600;font-size:30px;margin:4px 0 0;}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
+
+/* App Container - Hidden Until Gating Complete */
+.app{max-width:1300px;margin:0 auto;padding:24px 20px 80px;}
+
+/* Brand Kit Apex Top Header */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+  border-bottom:2px solid var(--gold);
+  padding:20px;
+  background:linear-gradient(180deg, rgba(11,27,61,0.9) 0%, rgba(5,12,28,0.4) 100%);
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+.wordmark{font-family:'Cinzel',serif;font-weight:700;font-size:16px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+.hero-title{font-family:'Cinzel',serif;font-weight:800;font-size:28px;margin:4px 0 0;color:var(--pure-white);text-shadow:0 0 12px rgba(212,175,55,0.25);}
 
 /* Wizard Navigation Bar */
-.wiz-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:30px;}
+.wiz-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
 .wiz-step{background:var(--panel);border:1px solid var(--hairline);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all .2s ease;}
-.wiz-step.active{border-color:var(--brass);background:rgba(201,162,39,.1);color:var(--brass-light);}
+.wiz-step.active{border-color:var(--gold);background:rgba(212,175,55,.15);color:var(--gold-light);box-shadow:0 0 14px rgba(212,175,55,0.25);}
 .wiz-step.done{border-color:var(--teal);color:var(--teal);}
-.wiz-step .num{font-family:'IBM Plex Mono',monospace;font-size:11px;opacity:.7;display:block;}
-.wiz-step .lbl{font-size:12px;font-weight:600;margin-top:2px;}
+.wiz-step .num{font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:.75;display:block;}
+.wiz-step .lbl{font-family:'Cinzel',serif;font-size:12px;font-weight:700;margin-top:2px;}
 
 /* Dashboard Grid Layout */
-.dashboard-grid{display:grid;grid-template-columns:1fr 310px;gap:20px;}
+.dashboard-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;}
 @media(max-width:1024px){.dashboard-grid{grid-template-columns:1fr;}}
 
 /* Panels */
-.panel{background:var(--panel);border:1px solid var(--hairline);border-radius:18px;padding:26px;margin-bottom:24px;}
+.panel{background:var(--panel);border:1px solid var(--hairline);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;color:var(--brass);text-transform:uppercase;display:block;margin-bottom:4px;}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:4px;}
 
-/* Inputs */
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* Form Fields */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:800px){.grid-3,.grid-2{grid-template-columns:1fr;}}
 
-.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-.field input, .field select{width:100%;background:#0D1826;border:1px solid var(--hairline);border-radius:10px;padding:12px 14px;color:var(--ivory);font-size:14px;font-family:'IBM Plex Mono',monospace;}
-.field input:focus, .field select:focus{outline:none;border-color:var(--brass);}
+.field label{display:block;font-size:10.5px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.field input, .field select{width:100%;background:var(--void-deep);border:1px solid var(--hairline);border-radius:8px;padding:12px 14px;color:var(--ivory);font-size:13.5px;font-family:'IBM Plex Mono',monospace;}
+.field input:focus, .field select:focus{outline:none;border-color:var(--gold);}
 
-/* Search Bar Engine */
-.search-bar-box{background:#0D1826;border:1px solid var(--brass);border-radius:12px;padding:14px;margin-bottom:20px;}
-.search-bar-box input{font-size:15px;color:var(--brass-light);background:#070F1A;}
+/* Search Bar Box */
+.search-bar-box{background:var(--void-deep);border:1px solid var(--gold);border-radius:12px;padding:14px;margin-bottom:18px;}
+.search-bar-box input{font-size:14px;color:var(--gold-light);background:transparent;}
 
 /* Buttons */
-.btn{background:var(--brass);color:#1A1400;border:none;border-radius:11px;padding:12px 24px;font-weight:600;font-size:14px;cursor:pointer;transition:filter .15s;font-family:'IBM Plex Sans',sans-serif;}
-.btn:hover{filter:brightness(1.12);}
+.btn{background:var(--gold);color:var(--regal-navy);border:none;border-radius:8px;padding:12px 22px;font-weight:700;font-size:13px;cursor:pointer;transition:filter .15s, transform .1s;font-family:'Montserrat',sans-serif;letter-spacing:.04em;text-transform:uppercase;}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px);}
 .btn.ghost{background:transparent;border:1px solid var(--hairline);color:var(--ivory);}
-.btn.ghost:hover{border-color:var(--brass);color:var(--brass-light);}
-.btn.red-pill{background:#E23B3B;color:#FFF;border-radius:100px;font-weight:700;padding:14px 28px;font-size:15px;width:100%;}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold-light);}
+.btn.red-pill{background:#E23B3B;color:#FFF;border-radius:100px;font-weight:700;padding:14px 28px;font-size:14px;width:100%;letter-spacing:.05em;}
 .btn.red-pill:hover{background:#C82C2C;}
-.btn-row{display:flex;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid var(--hairline);}
+.btn-row{display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline);}
 
 /* Filter Pills */
-.goal-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-.pill{background:var(--panel-raised);border:1px solid var(--hairline);padding:10px 16px;border-radius:100px;font-size:13px;cursor:pointer;transition:all .15s;}
-.pill.active{background:rgba(201,162,39,.2);border-color:var(--brass);color:var(--brass-light);}
+.goal-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.pill{background:var(--panel-raised);border:1px solid var(--hairline);padding:8px 14px;border-radius:100px;font-size:12px;cursor:pointer;transition:all .15s;}
+.pill.active{background:rgba(212,175,55,.2);border-color:var(--gold);color:var(--gold-light);}
 
 /* Cards */
-.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.comp-card{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-space-between;transition:all .15s ease;}
-.comp-card:hover{border-color:var(--brass);transform:translateY(-2px);}
-.comp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
-.comp-cat{font-size:9.5px;text-transform:uppercase;color:var(--brass);font-weight:600;}
-.heart-btn{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.comp-card{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:12px;padding:16px;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-space-between;transition:all .15s ease;}
+.comp-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.5);}
+.comp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.comp-cat{font-size:9px;text-transform:uppercase;color:var(--gold);font-weight:700;letter-spacing:.05em;}
+.heart-btn{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;}
 .heart-btn.active{color:var(--heart);}
 
 /* Tactical Sidebar Cards */
 .sidebar-box{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:12px;padding:16px;margin-bottom:16px;}
-.sidebar-title{font-family:'Fraunces',serif;font-size:14px;color:var(--brass-light);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
+.sidebar-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold-light);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
 
-.tick-table{width:100%;border-collapse:collapse;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.tick-table{width:100%;border-collapse:collapse;font-size:11px;font-family:'IBM Plex Mono',monospace;}
 .tick-table th{color:var(--muted);text-align:left;padding-bottom:6px;border-bottom:1px solid var(--hairline);}
-.tick-table td{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.tick-table td{padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
 
-.lifestyle-box{background:#0D1826;border-left:3px solid var(--teal);padding:16px;border-radius:0 12px 12px 0;margin-bottom:20px;font-size:13px;line-height:1.6;}
-.lifestyle-box h4{margin:0 0 6px;color:var(--brass-light);font-size:14px;}
+.lifestyle-box{background:var(--void-deep);border-left:3px solid var(--teal);padding:16px;border-radius:0 12px 12px 0;margin-bottom:20px;font-size:12.5px;line-height:1.6;}
+.lifestyle-box h4{margin:0 0 6px;color:var(--gold-light);font-size:13.5px;font-family:'Cinzel',serif;}
 
 /* Tables */
-.stack-table{width:100%;border-collapse:collapse;margin-top:12px;}
-.stack-table th, .stack-table td{padding:12px;text-align:left;border-bottom:1px solid var(--hairline);font-size:13px;}
-.stack-table th{font-size:11px;color:var(--muted);text-transform:uppercase;}
+.stack-table{width:100%;border-collapse:collapse;margin-top:10px;}
+.stack-table th, .stack-table td{padding:10px;text-align:left;border-bottom:1px solid var(--hairline);font-size:12px;}
+.stack-table th{font-size:10px;color:var(--muted);text-transform:uppercase;}
 
-.pen-card{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;margin-bottom:14px;}
-.pen-card-title{font-family:'Fraunces',serif;font-size:17px;color:var(--brass-light);margin-bottom:10px;display:flex;justify-content:space-between;}
+.pen-card{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:12px;padding:16px;margin-bottom:12px;}
+.pen-card-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-light);margin-bottom:8px;display:flex;justify-content:space-between;}
 
-/* Dynamic Modals */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(6,10,16,.88);backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;padding:20px;}
-.modal-bg.show{display:flex;}
+/* Modals Overlay Base */
+.modal-bg{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(5,12,28,.96);
+  backdrop-filter:blur(12px);
+  z-index:99999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
 
-.modal{background:var(--panel);border:1px solid var(--hairline);border-radius:20px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;position:relative;animation:popIn .2s ease;}
+.modal{background:var(--panel);border:1px solid var(--gold);border-radius:20px;max-width:640px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;position:relative;animation:popIn .2s ease;}
 @keyframes popIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
 .modal-close{position:absolute;top:20px;right:22px;cursor:pointer;color:var(--muted);font-size:22px;background:none;border:none;}
-.modal h3{font-family:'Fraunces',serif;font-size:24px;margin:4px 0 2px;color:var(--brass-light);}
+.modal h3{font-family:'Cinzel',serif;font-size:22px;margin:4px 0 2px;color:var(--gold-light);}
 
-/* Light / Warm Research Card Modals (Matching Screenshots) */
-.light-modal-card{background:#FBF9F4;color:#1C2430;border-radius:24px;padding:36px;max-width:520px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.6);position:relative;animation:popIn .25s ease;}
-.light-modal-card h2{font-family:'Fraunces',serif;font-size:26px;color:#0F172A;margin:12px 0 10px;font-weight:700;}
-.light-modal-card p{font-size:13.5px;color:#475569;line-height:1.6;margin-bottom:20px;}
+/* Light Ivory Research Card Modals */
+.light-modal-card{
+  background:#FBF9F4;
+  color:#0B1B3D;
+  border-radius:20px;
+  padding:36px;
+  max-width:520px;
+  width:100%;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.8);
+  position:relative;
+  animation:popIn .25s ease;
+  border:2px solid var(--gold);
+}
+.light-modal-card h2{font-family:'Cinzel',serif;font-size:24px;color:#0B1B3D;margin:12px 0 10px;font-weight:700;}
+.light-modal-card p{font-size:13px;color:#4A5568;line-height:1.6;margin-bottom:20px;}
 .light-modal-card input[type="text"],
 .light-modal-card input[type="email"],
-.light-modal-card input[type="tel"]{width:100%;background:#FFF;border:1px solid #CBD5E1;border-radius:12px;padding:12px 16px;font-size:14px;color:#0F172A;margin-bottom:10px;font-family:'IBM Plex Sans',sans-serif;}
+.light-modal-card input[type="tel"]{width:100%;background:#FFF;border:1px solid #CBD5E1;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#0B1B3D;margin-bottom:10px;font-family:'Montserrat',sans-serif;}
 .light-modal-card input:focus{outline:none;border-color:#E23B3B;}
 
 .step-panel{display:none;}
@@ -128,10 +165,10 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
 </head>
 <body>
 
-<!-- ===================== LEGAL AGE GATE MODAL ===================== -->
-<div class="modal-bg" id="legalGateBg" style="display:flex; z-index:9999;">
+<!-- ===================== GATE 1: LEGAL AGE GATE MODAL ===================== -->
+<div class="modal-bg" id="legalGateBg" style="display:flex;">
   <div class="light-modal-card">
-    <div style="font-family:'Fraunces',serif;font-weight:700;font-size:18px;letter-spacing:.12em;color:#0F172A;text-transform:uppercase;">
+    <div style="font-family:'Cinzel',serif;font-weight:700;font-size:16px;letter-spacing:.2em;color:#0B1B3D;text-transform:uppercase;">
       🦁 THE LION CLINIC
     </div>
     <h2>Research Confirmation</h2>
@@ -145,23 +182,21 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
   </div>
 </div>
 
-<!-- ===================== VIP LEAD CAPTURE EMAIL WALL MODAL ===================== -->
-<div class="modal-bg" id="emailWallBg" style="z-index:9998;">
+<!-- ===================== GATE 2: VIP LEAD CAPTURE EMAIL WALL MODAL ===================== -->
+<div class="modal-bg" id="emailWallBg" style="display:none;">
   <div class="light-modal-card">
-    <button class="modal-close" style="color:#64748B;top:16px;right:20px;" onclick="closeEmailWall()">✕</button>
-    
     <div style="font-size:11px;font-weight:700;letter-spacing:.15em;color:#E23B3B;text-transform:uppercase;margin-bottom:4px;">
       THE LION CLINIC · PROTOCOL INSIDER
     </div>
-    <h2>Unlock VIP Research Portal</h2>
+    <h2>Reclaim Your Cellular Vitality</h2>
     <p>
-      Enter your details below to unlock full access to customized auto-pen reconstitution blue-prints, research updates, and exclusive protocol materials.
+      Enter your details below to unlock full access to customized auto-pen reconstitution blueprints, neuro-protection guides, and exclusive protocol updates.
     </p>
 
     <form id="leadCaptureForm" onsubmit="submitLeadCapture(event)">
       <input type="text" id="leadName" placeholder="Full Name" required>
-      <input type="email" id="leadEmail" placeholder="you@researchlab.com" required>
-      <input type="tel" id="leadPhone" placeholder="Phone Number (for SMS Alerts)" required>
+      <input type="email" id="leadEmail" placeholder="you@domain.com" required>
+      <input type="tel" id="leadPhone" placeholder="Phone Number (for Protocol Alerts)" required>
 
       <div style="text-align:left;margin:12px 0 18px;display:flex;align-items:flex-start;gap:10px;">
         <input type="checkbox" id="leadConsent" required style="margin-top:3px;accent-color:#E23B3B;">
@@ -172,24 +207,21 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
 
       <button type="submit" class="btn red-pill">Verify &amp; Access Protocol OS →</button>
     </form>
-
-    <div style="margin-top:14px;">
-      <a href="javascript:void(0)" onclick="closeEmailWall()" style="color:#94A3B8;font-size:12px;text-decoration:none;">No thanks, I'll view basic mode</a>
-    </div>
-    <div style="font-size:10px;color:#94A3B8;margin-top:12px;">
+    <div style="font-size:10px;color:#94A3B8;margin-top:14px;">
       Strictly for laboratory &amp; research use only. Unsubscribe anytime.
     </div>
   </div>
 </div>
 
-<div class="app">
-  <!-- TOP HEADER -->
+<!-- ===================== MAIN APPLICATION (LOCKED UNTIL GATES PASSED) ===================== -->
+<div class="app" id="mainApp" style="display:none;">
+  <!-- APEX TOP HEADER -->
   <div class="header">
     <div>
       <div class="wordmark">🦁 The Lion Clinic</div>
       <div class="hero-title">Auto-Pen Protocol Wizard OS</div>
     </div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);" id="todayChip">—</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);" id="todayChip">—</div>
   </div>
 
   <!-- WIZARD STEP NAVIGATION BAR -->
@@ -205,7 +237,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
   <div class="step-panel active" id="step-1">
     <div class="panel">
       <div class="panel-head">
-        <div><span class="eyebrow">Biometric Onboarding</span>Establish Body Shape, Age &amp; Blood Metrics</div>
+        <div><span class="eyebrow">Biometric Calibration</span>Establish Body Profile &amp; Mass Scaler</div>
       </div>
       
       <div class="grid-3" style="margin-bottom:16px;">
@@ -227,8 +259,8 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
         <div class="field">
           <label>Body Shape Profile</label>
           <select id="userBodyShape" onchange="recalcBiometrics()">
-            <option value="endomorph" selected>Endomorph (High Fat Retention / Stocky)</option>
-            <option value="mesomorph">Mesomorph (Athletic / Broad Frame)</option>
+            <option value="endomorph" selected>Endomorph (High Fat Retention / Stocky Frame)</option>
+            <option value="mesomorph">Mesomorph (Athletic / Broad Structure)</option>
             <option value="ectomorph">Ectomorph (Lean / Fast Metabolism)</option>
           </select>
         </div>
@@ -250,7 +282,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
       <div style="margin-top:22px;background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
         <div>
           <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Calculated BMI</span>
-          <div id="bmiReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--brass-light);margin-top:4px;">39.6</div>
+          <div id="bmiReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">39.6</div>
         </div>
         <div>
           <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Mass Scaling Factor</span>
@@ -258,7 +290,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
         </div>
         <div>
           <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Daily Protein Target</span>
-          <div id="proteinReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--brass-light);margin-top:4px;">180g / day</div>
+          <div id="proteinReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">180g / day</div>
         </div>
         <div>
           <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Profile Category</span>
@@ -281,7 +313,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
       </div>
 
       <div class="lifestyle-box">
-        <h4>🥩 Mandatory 180g Protein &amp; Safety Rules</h4>
+        <h4>🥩 Reclaim Control: Mandatory 180g Protein &amp; Safety Protocols</h4>
         You must consume <b>180g of complete protein/day</b> and complete <b>3–4 resistance sessions/week</b> to protect muscle mass on incretins. Always use BAC water, swirl gently (never shake), and refrigerate reconstituted vials.
       </div>
 
@@ -290,7 +322,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
         <div>
           <div class="search-bar-box">
             <div class="field">
-              <label style="color:var(--brass-light);font-size:12px;font-weight:600;">🔍 Search Library by Code or Common Name (e.g. "Mounjaro", "GLP1", "GLP3", "BPC", "Retatrutide")</label>
+              <label style="color:var(--gold-light);font-size:12px;font-weight:600;">🔍 Search Library by Code or Common Name (e.g. "Mounjaro", "GLP1", "GLP3", "BPC", "Retatrutide")</label>
               <input id="searchInput" type="text" placeholder="Type peptide code or brand (e.g. Mounjaro, Ozempic, GLP1, GLP3, BC10)..." oninput="onSearchInput(this.value)">
             </div>
           </div>
@@ -298,7 +330,7 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
           <div class="goal-pills">
             <div class="pill active" onclick="filterGoal('all', this)">🌐 Full Atlas Library (33+)</div>
             <div class="pill" onclick="filterGoal('Metabolic / Endurance', this)">🔥 Fat Loss &amp; Metabolic</div>
-            <div class="pill" onclick="filterGoal('Healing / Anti-inflammatory', this)">🩹 Repair &amp; Tissue Healing</div>
+            <div class="pill" onclick="filterGoal('Healing / Anti-inflammatory', this)">🩹 Repair &amp; Autoimmune</div>
             <div class="pill" onclick="filterGoal('Neuro / Focus', this)">🧠 Neuro &amp; Mitochondria</div>
             <div class="pill" onclick="filterGoal('Hormone / Growth', this)">🌙 Hormones &amp; Sleep</div>
             <div class="pill" onclick="filterGoal('Specialty / Signaling', this)">⚡ Sexual &amp; Specialty</div>
@@ -320,14 +352,14 @@ html,body{margin:0;padding:0;background:var(--void);color:var(--ivory);font-fami
                 <tr><td>25 Units</td><td style="color:var(--teal);">0.25 mL</td></tr>
                 <tr><td>30 Units</td><td style="color:var(--teal);">0.30 mL</td></tr>
                 <tr><td>50 Units</td><td style="color:var(--teal);">0.50 mL</td></tr>
-                <tr><td>100 Units</td><td style="color:var(--brass-light);">1.00 mL</td></tr>
+                <tr><td>100 Units</td><td style="color:var(--gold-light);">1.00 mL</td></tr>
               </tbody>
             </table>
           </div>
 
           <div class="sidebar-box">
             <div class="sidebar-title">⚡ Concentration Rules</div>
-            <div style="font-size:11.5px;font-family:'IBM Plex Mono',monospace;line-height:1.6;color:var(--brass-light);">
+            <div style="font-size:11.5px;font-family:'IBM Plex Mono',monospace;line-height:1.6;color:var(--gold-light);">
               • <b>2 mg/mL:</b> 1 mg = 50 U (0.50 mL)<br>
               • <b>5 mg/mL:</b> 1 mg = 20 U (0.20 mL)<br>
               • <b>10 mg/mL:</b> 1 mg = 10 U (0.10 mL)<br>
@@ -638,49 +670,48 @@ const PEPTIDES = [
    conflicts:"None major."}
 ];
 
-/* ===================== STATE STORE ===================== */
+/* ===================== HARD GATE CONTROL ENGINE ===================== */
 let currentStep = 1;
 let selectedStack = new Map();
 let activeGoalFilter = 'all';
 let searchQuery = '';
 
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('todayChip').textContent = new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
   recalcBiometrics();
   renderLibrary();
+  checkGateStatus();
+});
 
-  // Check if legal gate cleared
-  if(localStorage.getItem('lionLegalGateCleared') === 'true'){
-    document.getElementById('legalGateBg').style.display = 'none';
+function checkGateStatus() {
+  const legalGate = document.getElementById('legalGateBg');
+  const emailWall = document.getElementById('emailWallBg');
+  const mainApp = document.getElementById('mainApp');
+
+  const isLegalCleared = localStorage.getItem('lionLegalGateCleared') === 'true';
+  const isLeadCaptured = localStorage.getItem('lionLeadCaptured') !== null;
+
+  if (!isLegalCleared) {
+    // Show Gate 1: Age Gate
+    legalGate.style.display = 'flex';
+    emailWall.style.display = 'none';
+    mainApp.style.display = 'none';
+  } else if (!isLeadCaptured) {
+    // Show Gate 2: Email Lead Wall
+    legalGate.style.display = 'none';
+    emailWall.style.display = 'flex';
+    mainApp.style.display = 'none';
+  } else {
+    // Fully Unlocked
+    legalGate.style.display = 'none';
+    emailWall.style.display = 'none';
+    mainApp.style.display = 'block';
   }
+}
 
-  // Trigger Email Wall popup after 3 seconds if not completed
-  if(!localStorage.getItem('lionLeadCaptured')){
-    setTimeout(() => {
-      if(localStorage.getItem('lionLegalGateCleared') === 'true'){
-        openEmailWall();
-      }
-    }, 3000);
-  }
-};
-
-/* Modal Trigger Logic for Legal Gate & Lead Capture Wall */
 function acceptLegalGate(){
   localStorage.setItem('lionLegalGateCleared', 'true');
-  document.getElementById('legalGateBg').style.display = 'none';
-
-  // Open Email Wall right after clearing gate
-  if(!localStorage.getItem('lionLeadCaptured')){
-    openEmailWall();
-  }
-}
-
-function openEmailWall(){
-  document.getElementById('emailWallBg').classList.add('show');
-}
-
-function closeEmailWall(){
-  document.getElementById('emailWallBg').classList.remove('show');
+  checkGateStatus();
 }
 
 function submitLeadCapture(event){
@@ -694,14 +725,14 @@ function submitLeadCapture(event){
   };
 
   localStorage.setItem('lionLeadCaptured', JSON.stringify(leadData));
-  closeEmailWall();
-  alert("✓ Profile Verified! You now have full unlocked access to Protocol OS.");
+  checkGateStatus();
 }
 
+/* ===================== APPLICATION NAVIGATION & CALCULATORS ===================== */
 function navToStep(stepNum){
-  // Check if lead capture is done when advancing past step 1
-  if(stepNum > 1 && !localStorage.getItem('lionLeadCaptured')){
-    openEmailWall();
+  if(!localStorage.getItem('lionLeadCaptured')){
+    checkGateStatus();
+    return;
   }
 
   currentStep = stepNum;
@@ -780,19 +811,19 @@ function renderLibrary(){
   grid.innerHTML = filtered.map(p => {
     const isSelected = selectedStack.has(p.code);
     return `
-      <div class="comp-card" onclick="openModal('${p.code}')" style="${isSelected?'border-color:var(--brass);background:rgba(201,162,39,.08);':''}">
+      <div class="comp-card" onclick="openModal('${p.code}')" style="${isSelected?'border-color:var(--gold);background:rgba(212,175,55,.08);':''}">
         <div>
           <div class="comp-head">
             <span class="comp-cat">${p.cat}</span>
             <button class="heart-btn ${isSelected?'active':''}" onclick="toggleSelectPeptide('${p.code}', event)">${isSelected?'♥ Added':'+ Add'}</button>
           </div>
-          <div style="font-family:'Fraunces',serif;font-size:16.5px;font-weight:600;margin:4px 0;">${p.name}</div>
-          <div style="font-size:10.5px;color:var(--brass-light);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;">CODE: ${p.code}</div>
+          <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;margin:4px 0;color:var(--pure-white);">${p.name}</div>
+          <div style="font-size:10.5px;color:var(--gold-light);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;">CODE: ${p.code}</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:10px;">${p.desc}</div>
         </div>
-        <div style="background:#0D1826;padding:8px 10px;border-radius:8px;font-size:10.5px;margin-top:auto;">
+        <div style="background:var(--void-deep);padding:8px 10px;border-radius:8px;font-size:10.5px;margin-top:auto;">
           <span style="color:var(--teal);display:block;"><b>Human Data:</b> ${p.humanTrial}</span>
-          <span style="color:var(--brass-light);display:block;margin-top:2px;">🔍 <i>Click card for research profile</i></span>
+          <span style="color:var(--gold-light);display:block;margin-top:2px;">🔍 <i>Click card for research profile</i></span>
         </div>
       </div>
     `;
@@ -815,10 +846,10 @@ function openModal(code){
 
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div style="font-size:11px;color:var(--brass);text-transform:uppercase;font-weight:600;letter-spacing:.08em;">${p.cat}</div>
+    <div style="font-size:11px;color:var(--gold);text-transform:uppercase;font-weight:600;letter-spacing:.08em;">${p.cat}</div>
     <h3>${p.name}</h3>
     <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-bottom:4px;">CODE: ${p.code} · Preferred Timing: ${p.timing}</div>
-    <div style="font-size:11px;color:var(--brass-light);margin-bottom:14px;">Aliases &amp; Brands: ${p.aliases}</div>
+    <div style="font-size:11px;color:var(--gold-light);margin-bottom:14px;">Aliases &amp; Brands: ${p.aliases}</div>
     
     <div style="font-size:13.5px;color:var(--ivory);line-height:1.6;margin-bottom:14px;">${p.desc}</div>
 
@@ -828,10 +859,10 @@ function openModal(code){
     <div style="margin-top:12px;font-weight:600;font-size:12px;color:var(--coral);">Cons &amp; Guardrails:</div>
     <div style="font-size:12.5px;color:var(--ivory);margin-top:4px;line-height:1.5;">${p.down}</div>
 
-    <div style="margin-top:16px;background:#0D1826;padding:12px;border-radius:10px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="margin-top:16px;background:var(--void-deep);padding:12px;border-radius:10px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
       <div>
         <span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;">Standard Reconstitution</span>
-        <span style="color:var(--brass-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${p.defaultMg}mg Powder + ${p.defaultWater}mL Water</span>
+        <span style="color:var(--gold-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${p.defaultMg}mg Powder + ${p.defaultWater}mL Water</span>
       </div>
       <div style="text-align:right;">
         <span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;">Starter Dose (Mass &amp; Units)</span>
@@ -849,11 +880,11 @@ function openModal(code){
     </div>
   `;
 
-  document.getElementById('modalBg').classList.add('show');
+  document.getElementById('modalBg').style.display = 'flex';
 }
 
 function closeModal(){
-  document.getElementById('modalBg').classList.remove('show');
+  document.getElementById('modalBg').style.display = 'none';
 }
 
 function renderDoseTuning(){
@@ -881,26 +912,26 @@ function renderDoseTuning(){
       <div style="background:var(--panel-raised);border:1px solid var(--hairline);padding:18px;border-radius:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
-            <div style="font-weight:600;font-size:16px;color:var(--brass-light);">${p.name} <span style="font-size:11px;color:var(--muted);">(${p.code})</span></div>
+            <div style="font-weight:700;font-size:16px;color:var(--gold-light);font-family:'Cinzel',serif;">${p.name} <span style="font-size:11px;color:var(--muted);">(${p.code})</span></div>
             <div style="font-size:11px;color:var(--muted);">Category: ${p.cat} · Timing: ${p.timing}</div>
           </div>
-          <div style="text-align:right;background:#0D1826;padding:8px 12px;border-radius:8px;border:1px solid var(--hairline);">
+          <div style="text-align:right;background:var(--void-deep);padding:8px 12px;border-radius:8px;border:1px solid var(--hairline);">
             <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Target Dose (Mass &amp; Units)</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--teal);font-weight:600;">
-              ${scaledMass.toFixed(1)} ${p.unit} <span style="color:var(--brass-light);">(${calculatedUnits.toFixed(1)} Units)</span>
+              ${scaledMass.toFixed(1)} ${p.unit} <span style="color:var(--gold-light);">(${calculatedUnits.toFixed(1)} Units)</span>
             </div>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
-          <button class="btn ghost" style="${val.tier==='micro'?'border-color:var(--brass);color:var(--brass-light);background:rgba(201,162,39,.15);':''}" onclick="setDoseTier('${code}','micro')">Micro<br><span style="font-size:10px;">${p.micro}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='starter'?'border-color:var(--brass);color:var(--brass-light);background:rgba(201,162,39,.15);':''}" onclick="setDoseTier('${code}','starter')">Starter<br><span style="font-size:10px;">${p.starter}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='maint'?'border-color:var(--brass);color:var(--brass-light);background:rgba(201,162,39,.15);':''}" onclick="setDoseTier('${code}','maint')">Maintenance<br><span style="font-size:10px;">${p.maint}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='super'?'border-color:var(--brass);color:var(--brass-light);background:rgba(201,162,39,.15);':''}" onclick="setDoseTier('${code}','super')">Superdose Max<br><span style="font-size:10px;">${p.super}${p.unit}</span></button>
+          <button class="btn ghost" style="${val.tier==='micro'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','micro')">Micro<br><span style="font-size:10px;">${p.micro}${p.unit}</span></button>
+          <button class="btn ghost" style="${val.tier==='starter'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','starter')">Starter<br><span style="font-size:10px;">${p.starter}${p.unit}</span></button>
+          <button class="btn ghost" style="${val.tier==='maint'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','maint')">Maintenance<br><span style="font-size:10px;">${p.maint}${p.unit}</span></button>
+          <button class="btn ghost" style="${val.tier==='super'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','super')">Superdose Max<br><span style="font-size:10px;">${p.super}${p.unit}</span></button>
         </div>
 
-        <div style="background:#0D1826;padding:12px;border-radius:10px;border:1px dashed var(--hairline);">
-          <div style="font-size:11px;color:var(--brass-light);font-weight:600;margin-bottom:8px;">🧪 Edit Vial Mixing Potency:</div>
+        <div style="background:var(--void-deep);padding:12px;border-radius:10px;border:1px dashed var(--hairline);">
+          <div style="font-size:11px;color:var(--gold-light);font-weight:600;margin-bottom:8px;">🧪 Edit Vial Mixing Potency:</div>
           <div class="grid-2">
             <div class="field"><label>Dry Powder (mg)</label><input type="number" step="any" value="${val.vialMg}" oninput="updateVialMixing('${code}', this.value, null)"></div>
             <div class="field"><label>BAC Water (mL)</label><input type="number" step="any" value="${val.vialWater}" oninput="updateVialMixing('${code}', null, this.value)"></div>
@@ -965,11 +996,11 @@ function renderStackReview(){
 
     table += `
       <tr>
-        <td style="font-weight:600;color:var(--brass-light);">${p.name} <span style="font-size:10px;color:var(--muted);">(${p.code})</span></td>
+        <td style="font-weight:600;color:var(--gold-light);">${p.name} <span style="font-size:10px;color:var(--muted);">(${p.code})</span></td>
         <td style="text-transform:capitalize;">${val.tier}</td>
         <td style="color:var(--teal);font-family:'IBM Plex Mono',monospace;">${scaledMass.toFixed(1)} ${p.unit}</td>
         <td style="font-size:11px;color:var(--muted);">${val.vialMg}mg in ${val.vialWater}mL</td>
-        <td style="color:var(--brass-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${units.toFixed(1)} Units</td>
+        <td style="color:var(--gold-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${units.toFixed(1)} Units</td>
         <td>${p.timing}</td>
       </tr>
     `;
@@ -979,9 +1010,9 @@ function renderStackReview(){
   container.innerHTML = table;
 
   if(hasCopper && hasIncretin){
-    flags.innerHTML = `<div style="background:rgba(226,103,59,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#f0c9b8;font-size:12px;">⚠️ <b>Auto-Separation Conflict Note:</b> Copper peptides (GHK-Cu) and metabolic/incretin variants will be automatically separated into independent pen cartridges to prevent liquid peptide degradation.</div>`;
+    flags.innerHTML = `<div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;">⚠️ <b>Auto-Separation Conflict Note:</b> Copper peptides (GHK-Cu) and metabolic/incretin variants will be automatically separated into independent pen cartridges to prevent liquid peptide degradation.</div>`;
   } else {
-    flags.innerHTML = `<div style="background:rgba(79,163,154,.15);border:1px solid var(--teal);padding:12px;border-radius:10px;color:#cfeae7;font-size:12px;">✓ <b>Stack Approved:</b> All selected compounds cleared for auto-pen cartridge placement.</div>`;
+    flags.innerHTML = `<div style="background:rgba(16,185,129,.15);border:1px solid var(--teal);padding:12px;border-radius:10px;color:#A7F3D0;font-size:12px;">✓ <b>Stack Approved:</b> All selected compounds cleared for auto-pen cartridge placement.</div>`;
   }
 }
 
@@ -1032,12 +1063,12 @@ function renderPenBlueprint(){
     `;
 
     items.forEach(it => {
-      html += `<li><b>${it.name}</b> (${it.code}): Mix <b>${it.vialMg}mg</b> powder with <b>${it.vialWater}mL BAC Water</b> → Draw <b>${it.scaledMass.toFixed(1)} ${it.unit}</b> (<b style="color:var(--brass-light);">${it.units.toFixed(1)} Units</b>)</li>`;
+      html += `<li><b>${it.name}</b> (${it.code}): Mix <b>${it.vialMg}mg</b> powder with <b>${it.vialWater}mL BAC Water</b> → Draw <b>${it.scaledMass.toFixed(1)} ${it.unit}</b> (<b style="color:var(--gold-light);">${it.units.toFixed(1)} Units</b>)</li>`;
     });
 
     html += `
         </ul>
-        <div style="background:#0D1826;padding:10px 12px;border-radius:8px;font-size:11.5px;color:var(--brass-light);">
+        <div style="background:var(--void-deep);padding:10px 12px;border-radius:8px;font-size:11.5px;color:var(--gold-light);">
           🎯 <b>Target Result:</b> Inject <b>${totalUnits.toFixed(1)} Units</b> (${groupKey}). Cartridge holds 250 Units total (~${Math.floor(250/totalUnits)} days supply).
         </div>
       </div>
