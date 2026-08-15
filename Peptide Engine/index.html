@@ -25,9 +25,8 @@
 }
 
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;}
+html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
 
-/* App Container - Hidden Until Gating Complete */
 .app{max-width:1300px;margin:0 auto;padding:24px 20px 80px;}
 
 /* Brand Kit Apex Top Header */
@@ -109,15 +108,39 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
 .lifestyle-box{background:var(--void-deep);border-left:3px solid var(--teal);padding:16px;border-radius:0 12px 12px 0;margin-bottom:20px;font-size:12.5px;line-height:1.6;}
 .lifestyle-box h4{margin:0 0 6px;color:var(--gold-light);font-size:13.5px;font-family:'Cinzel',serif;}
 
-/* Tables */
-.stack-table{width:100%;border-collapse:collapse;margin-top:10px;}
-.stack-table th, .stack-table td{padding:10px;text-align:left;border-bottom:1px solid var(--hairline);font-size:12px;}
-.stack-table th{font-size:10px;color:var(--muted);text-transform:uppercase;}
+.legal-warning-box{background:rgba(212,175,55,.1);border:1px solid var(--gold);padding:16px;border-radius:12px;margin-top:20px;font-size:11.5px;line-height:1.5;color:var(--gold-light);}
 
-.pen-card{background:var(--panel-raised);border:1px solid var(--hairline);border-radius:12px;padding:16px;margin-bottom:12px;}
-.pen-card-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-light);margin-bottom:8px;display:flex;justify-content:space-between;}
+/* Persistent Compliance Footer */
+.persistent-footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#030814;
+  border-top:1px solid var(--hairline);
+  padding:8px 20px;
+  font-size:11px;
+  color:var(--muted);
+  text-align:center;
+  z-index:9000;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.persistent-footer a{color:var(--gold);text-decoration:none;margin-left:10px;}
 
-/* Modals Overlay Base */
+/* Fullscreen Screen-Lock Gate Overlay */
+.gate-screen{
+  position:fixed;
+  inset:0;
+  background:#050C1C;
+  z-index:999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
 .modal-bg{
   display:none;
   position:fixed;
@@ -141,7 +164,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
   color:#0B1B3D;
   border-radius:20px;
   padding:36px;
-  max-width:520px;
+  max-width:560px;
   width:100%;
   text-align:center;
   box-shadow:0 20px 60px rgba(0,0,0,0.8);
@@ -150,7 +173,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
   border:2px solid var(--gold);
 }
 .light-modal-card h2{font-family:'Cinzel',serif;font-size:24px;color:#0B1B3D;margin:12px 0 10px;font-weight:700;}
-.light-modal-card p{font-size:13px;color:#4A5568;line-height:1.6;margin-bottom:20px;}
+.light-modal-card p{font-size:12.5px;color:#4A5568;line-height:1.6;margin-bottom:16px;text-align:left;}
 .light-modal-card input[type="text"],
 .light-modal-card input[type="email"],
 .light-modal-card input[type="tel"]{width:100%;background:#FFF;border:1px solid #CBD5E1;border-radius:10px;padding:12px 14px;font-size:13.5px;color:#0B1B3D;margin-bottom:10px;font-family:'Montserrat',sans-serif;}
@@ -159,41 +182,51 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
 .step-panel{display:none;}
 .step-panel.active{display:block;}
 
+/* Print Styling Rules for Exported PDFs */
+@media print {
+  .header, .wiz-bar, .btn-row, .persistent-footer, .modal-bg { display: none !important; }
+  .app { max-width: 100%; padding: 0; }
+  .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+  .print-footer { display: block !important; margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; font-size: 10pt; text-align: center; }
+}
+.print-header, .print-footer { display: none; }
+
 ::-webkit-scrollbar{width:8px;}
 ::-webkit-scrollbar-thumb{background:var(--hairline);border-radius:10px;}
 </style>
 </head>
 <body>
 
-<!-- ===================== GATE 1: LEGAL AGE GATE MODAL ===================== -->
-<div class="modal-bg" id="legalGateBg" style="display:flex;">
-  <div class="light-modal-card">
-    <div style="font-family:'Cinzel',serif;font-weight:700;font-size:16px;letter-spacing:.2em;color:#0B1B3D;text-transform:uppercase;">
+<!-- ===================== FULLSCREEN GATE CONTAINER ===================== -->
+<div id="gateContainer" class="gate-screen">
+  <!-- GATE 1: LEGAL AGE & RUO GATE -->
+  <div class="light-modal-card" id="gateCard1">
+    <div style="font-family:'Cinzel',serif;font-weight:700;font-size:16px;letter-spacing:.2em;color:#0B1B3D;text-transform:uppercase;text-align:center;">
       🦁 THE LION CLINIC
     </div>
-    <h2>Research Confirmation</h2>
-    <p>
-      All protocols and information on this platform are supplied strictly for <b>laboratory and research use only (RUO)</b>. They are not intended to diagnose, treat, cure, or prevent any disease. Please confirm you are a qualified researcher aged 21 or older before proceeding.
-    </p>
-    <button class="btn red-pill" onclick="acceptLegalGate()">I am 21+ and a qualified researcher — Enter</button>
-    <div style="margin-top:16px;">
+    <h2 style="text-align:center;">Research Confirmation &amp; Legal Notice</h2>
+    
+    <p><b>NOTICE:</b> The tools, calculators, protocols, and information provided within this application are strictly for <i>in vitro</i> research, laboratory testing, and educational purposes only. This software is not a medical device. It does not provide medical, diagnostic, veterinary, or treatment advice.</p>
+    
+    <p><b>RESTRICTED USE:</b> Products, compounds, and protocols referenced or managed via this platform are not for human consumption, injection, or therapeutic use, and not for veterinary or animal use. They are strictly designated as research chemicals or laboratory reagents.</p>
+
+    <button class="btn red-pill" onclick="passGate1()">I am 21+ and a qualified researcher — Confirm &amp; Enter</button>
+    <div style="margin-top:16px;text-align:center;">
       <a href="https://google.com" style="color:#94A3B8;font-size:12px;text-decoration:underline;">Exit Platform</a>
     </div>
   </div>
-</div>
 
-<!-- ===================== GATE 2: VIP LEAD CAPTURE EMAIL WALL MODAL ===================== -->
-<div class="modal-bg" id="emailWallBg" style="display:none;">
-  <div class="light-modal-card">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.15em;color:#E23B3B;text-transform:uppercase;margin-bottom:4px;">
+  <!-- GATE 2: VIP LEAD CAPTURE EMAIL WALL -->
+  <div class="light-modal-card" id="gateCard2" style="display:none;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.15em;color:#E23B3B;text-transform:uppercase;margin-bottom:4px;text-align:center;">
       THE LION CLINIC · PROTOCOL INSIDER
     </div>
-    <h2>Reclaim Your Cellular Vitality</h2>
-    <p>
+    <h2 style="text-align:center;">Reclaim Your Cellular Vitality</h2>
+    <p style="text-align:center;">
       Enter your details below to unlock full access to customized auto-pen reconstitution blueprints, neuro-protection guides, and exclusive protocol updates.
     </p>
 
-    <form id="leadCaptureForm" onsubmit="submitLeadCapture(event)">
+    <form id="leadCaptureForm" onsubmit="passGate2(event)">
       <input type="text" id="leadName" placeholder="Full Name" required>
       <input type="email" id="leadEmail" placeholder="you@domain.com" required>
       <input type="tel" id="leadPhone" placeholder="Phone Number (for Protocol Alerts)" required>
@@ -207,514 +240,345 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
 
       <button type="submit" class="btn red-pill">Verify &amp; Access Protocol OS →</button>
     </form>
-    <div style="font-size:10px;color:#94A3B8;margin-top:14px;">
+    <div style="font-size:10px;color:#94A3B8;margin-top:14px;text-align:center;">
       Strictly for laboratory &amp; research use only. Unsubscribe anytime.
     </div>
   </div>
 </div>
 
-<!-- ===================== MAIN APPLICATION (LOCKED UNTIL GATES PASSED) ===================== -->
-<div class="app" id="mainApp" style="display:none;">
-  <!-- APEX TOP HEADER -->
-  <div class="header">
-    <div>
-      <div class="wordmark">🦁 The Lion Clinic</div>
-      <div class="hero-title">Auto-Pen Protocol Wizard OS</div>
-    </div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);" id="todayChip">—</div>
-  </div>
-
-  <!-- WIZARD STEP NAVIGATION BAR -->
-  <div class="wiz-bar">
-    <div class="wiz-step active" id="wiz-1" onclick="navToStep(1)"><span class="num">STEP 01</span><span class="lbl">Biometrics</span></div>
-    <div class="wiz-step" id="wiz-2" onclick="navToStep(2)"><span class="num">STEP 02</span><span class="lbl">Library &amp; Goals</span></div>
-    <div class="wiz-step" id="wiz-3" onclick="navToStep(3)"><span class="num">STEP 03</span><span class="lbl">Dose &amp; Potency</span></div>
-    <div class="wiz-step" id="wiz-4" onclick="navToStep(4)"><span class="num">STEP 04</span><span class="lbl">Stack Review</span></div>
-    <div class="wiz-step" id="wiz-5" onclick="navToStep(5)"><span class="num">STEP 05</span><span class="lbl">Fill Auto-Pens</span></div>
-  </div>
-
-  <!-- ===================== STEP 1: BIOMETRICS ===================== -->
-  <div class="step-panel active" id="step-1">
-    <div class="panel">
-      <div class="panel-head">
-        <div><span class="eyebrow">Biometric Calibration</span>Establish Body Profile &amp; Mass Scaler</div>
-      </div>
-      
-      <div class="grid-3" style="margin-bottom:16px;">
-        <div class="field">
-          <label>Age (Years)</label>
-          <input id="userAge" type="number" value="38" oninput="recalcBiometrics()">
-        </div>
-        <div class="field">
-          <label>Body Weight (lbs)</label>
-          <input id="userWeight" type="number" value="300" oninput="recalcBiometrics()">
-        </div>
-        <div class="field">
-          <label>Height (Inches)</label>
-          <input id="userHeight" type="number" value="73" oninput="recalcBiometrics()">
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="field">
-          <label>Body Shape Profile</label>
-          <select id="userBodyShape" onchange="recalcBiometrics()">
-            <option value="endomorph" selected>Endomorph (High Fat Retention / Stocky Frame)</option>
-            <option value="mesomorph">Mesomorph (Athletic / Broad Structure)</option>
-            <option value="ectomorph">Ectomorph (Lean / Fast Metabolism)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Blood Type</label>
-          <select id="userBloodType">
-            <option value="O+">O Positive</option>
-            <option value="O-">O Negative</option>
-            <option value="A+">A Positive</option>
-            <option value="A-">A Negative</option>
-            <option value="B+">B Positive</option>
-            <option value="B-">B Negative</option>
-            <option value="AB+">AB Positive</option>
-            <option value="AB-">AB Negative</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="margin-top:22px;background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
-        <div>
-          <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Calculated BMI</span>
-          <div id="bmiReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">39.6</div>
-        </div>
-        <div>
-          <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Mass Scaling Factor</span>
-          <div id="scaleReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--teal);margin-top:4px;">1.50x</div>
-        </div>
-        <div>
-          <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Daily Protein Target</span>
-          <div id="proteinReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">180g / day</div>
-        </div>
-        <div>
-          <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Profile Category</span>
-          <div id="statusReadout" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ivory);margin-top:8px;">High Mass / Endomorph</div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <div></div>
-        <button class="btn" onclick="navToStep(2)">Proceed to Library &amp; Goals →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== STEP 2: LIBRARY, SEARCH & SIDEBAR ===================== -->
-  <div class="step-panel" id="step-2">
-    <div class="panel">
-      <div class="panel-head">
-        <div><span class="eyebrow">Selection Engine</span>Full Peptide Library (Click Any Card for Details)</div>
-      </div>
-
-      <div class="lifestyle-box">
-        <h4>🥩 Reclaim Control: Mandatory 180g Protein &amp; Safety Protocols</h4>
-        You must consume <b>180g of complete protein/day</b> and complete <b>3–4 resistance sessions/week</b> to protect muscle mass on incretins. Always use BAC water, swirl gently (never shake), and refrigerate reconstituted vials.
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- Main Column -->
-        <div>
-          <div class="search-bar-box">
-            <div class="field">
-              <label style="color:var(--gold-light);font-size:12px;font-weight:600;">🔍 Search Library by Code or Common Name (e.g. "Mounjaro", "GLP1", "GLP3", "BPC", "Retatrutide")</label>
-              <input id="searchInput" type="text" placeholder="Type peptide code or brand (e.g. Mounjaro, Ozempic, GLP1, GLP3, BC10)..." oninput="onSearchInput(this.value)">
-            </div>
-          </div>
-
-          <div class="goal-pills">
-            <div class="pill active" onclick="filterGoal('all', this)">🌐 Full Atlas Library (33+)</div>
-            <div class="pill" onclick="filterGoal('Metabolic / Endurance', this)">🔥 Fat Loss &amp; Metabolic</div>
-            <div class="pill" onclick="filterGoal('Healing / Anti-inflammatory', this)">🩹 Repair &amp; Autoimmune</div>
-            <div class="pill" onclick="filterGoal('Neuro / Focus', this)">🧠 Neuro &amp; Mitochondria</div>
-            <div class="pill" onclick="filterGoal('Hormone / Growth', this)">🌙 Hormones &amp; Sleep</div>
-            <div class="pill" onclick="filterGoal('Specialty / Signaling', this)">⚡ Sexual &amp; Specialty</div>
-          </div>
-
-          <div class="comp-grid" id="compGrid"></div>
-        </div>
-
-        <!-- Right Tactical Sidebar -->
-        <div>
-          <div class="sidebar-box">
-            <div class="sidebar-title">💉 Syringe Volume (U-100)</div>
-            <table class="tick-table">
-              <thead><tr><th>UNITS</th><th>APPROX. VOLUME</th></tr></thead>
-              <tbody>
-                <tr><td>5 Units</td><td style="color:var(--teal);">0.05 mL</td></tr>
-                <tr><td>10 Units</td><td style="color:var(--teal);">0.10 mL</td></tr>
-                <tr><td>20 Units</td><td style="color:var(--teal);">0.20 mL</td></tr>
-                <tr><td>25 Units</td><td style="color:var(--teal);">0.25 mL</td></tr>
-                <tr><td>30 Units</td><td style="color:var(--teal);">0.30 mL</td></tr>
-                <tr><td>50 Units</td><td style="color:var(--teal);">0.50 mL</td></tr>
-                <tr><td>100 Units</td><td style="color:var(--gold-light);">1.00 mL</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="sidebar-box">
-            <div class="sidebar-title">⚡ Concentration Rules</div>
-            <div style="font-size:11.5px;font-family:'IBM Plex Mono',monospace;line-height:1.6;color:var(--gold-light);">
-              • <b>2 mg/mL:</b> 1 mg = 50 U (0.50 mL)<br>
-              • <b>5 mg/mL:</b> 1 mg = 20 U (0.20 mL)<br>
-              • <b>10 mg/mL:</b> 1 mg = 10 U (0.10 mL)<br>
-              • <b>20 mg/mL:</b> 1 mg = 5 U (0.05 mL)<br>
-              • <b>100 mg/mL:</b> 1 mg = 1 U (0.01 mL)
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn ghost" onclick="navToStep(1)">← Back</button>
-        <button class="btn" onclick="navToStep(3)">Tune Dose &amp; Potency →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== STEP 3: DOSAGE TUNING ===================== -->
-  <div class="step-panel" id="step-3">
-    <div class="panel">
-      <div class="panel-head">
-        <div><span class="eyebrow">Dose &amp; Reconstitution Engine</span>Tune Dose Tiers &amp; Edit Specific Vial Mixing Potency</div>
-      </div>
-      <div id="doseTuningContainer"></div>
-
-      <div class="btn-row">
-        <button class="btn ghost" onclick="navToStep(2)">← Back</button>
-        <button class="btn" onclick="navToStep(4)">Run AI Stack Review →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== STEP 4: STACK REVIEW ===================== -->
-  <div class="step-panel" id="step-4">
-    <div class="panel">
-      <div class="panel-head">
-        <div><span class="eyebrow">Engine Validation</span>Review Stack, Syringe Draw Volume &amp; Flags</div>
-      </div>
-      <div id="stackReviewList"></div>
-      <div id="approvalFlags" style="margin-top:16px;"></div>
-
-      <div class="btn-row">
-        <button class="btn ghost" onclick="navToStep(3)">← Back</button>
-        <button class="btn" onclick="approveAndProceed()">Approve &amp; Calculate Auto-Pens →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== STEP 5: FILL AUTO-PENS ===================== -->
-  <div class="step-panel" id="step-5">
-    <div class="panel">
-      <div class="panel-head">
-        <div><span class="eyebrow">Auto-Pen Cartridge Blueprint</span>Final Reconstitution &amp; Injection Blueprints</div>
-      </div>
-      <div id="penBlueprintContainer"></div>
-
-      <div class="btn-row">
-        <button class="btn ghost" onclick="navToStep(4)">← Edit Stack</button>
-        <button class="btn" onclick="window.print()">🖨️ Print Pen Guide</button>
-      </div>
-    </div>
-  </div>
-
-</div>
+<!-- ===================== MAIN APP MOUNT POINT ===================== -->
+<div id="appMount"></div>
 
 <!-- COMPOUND DETAIL POP-UP MODAL WINDOW -->
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modalContent"></div>
 </div>
 
+<!-- TOS MODAL WINDOW -->
+<div class="modal-bg" id="tosModalBg" onclick="if(event.target===this)closeTosModal()">
+  <div class="modal" style="max-width:700px;color:var(--ivory);">
+    <button class="modal-close" onclick="closeTosModal()">✕</button>
+    <h3>Terms of Service &amp; Liability Disclaimer</h3>
+    <div style="font-size:12px;line-height:1.7;color:var(--muted);margin-top:14px;">
+      <p><b>1. Publisher Liability Protections:</b> Mindstorm Labs and The Lion Clinic ("Publisher") assume no liability for the physical handling, laboratory usage, chemical compound selection, or equipment performance managed using this application.</p>
+      <p><b>2. Experimental Calculation Models:</b> All stoichiometry, mass scaling factors, and unit conversion outputs generated by this OS are strictly theoretical calculation models designed for educational and informational reference.</p>
+      <p><b>3. Non-Medical Statement:</b> This tool does not issue prescriptions or clinical medical advice. Misuse of research chemicals or injection equipment carries inherent risk. Users accept full sole responsibility for regulatory compliance and laboratory safety.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PERSISTENT SCREEN FOOTER -->
+<div class="persistent-footer">
+  <div>For Laboratory Research &amp; Educational Use Only. Not for Human or Animal Consumption.</div>
+  <div>
+    <span>Published by Mindstorm Labs</span>
+    <a href="javascript:void(0)" onclick="openTosModal()">Terms of Service</a>
+  </div>
+</div>
+
+<template id="appTemplate">
+  <div class="app">
+    <!-- PRINT HEADER -->
+    <div class="print-header">
+      <h2 style="margin:0;">Research Protocol Blueprint — For Laboratory Reference Only</h2>
+      <div style="font-size:10pt;">Not a Medical Prescription · The Lion Clinic OS</div>
+    </div>
+
+    <!-- APEX TOP HEADER -->
+    <div class="header">
+      <div>
+        <div class="wordmark">🦁 The Lion Clinic</div>
+        <div class="hero-title">Auto-Pen Protocol Wizard OS</div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);" id="todayChip">—</div>
+    </div>
+
+    <!-- WIZARD STEP NAVIGATION BAR -->
+    <div class="wiz-bar">
+      <div class="wiz-step active" id="wiz-1" onclick="navToStep(1)"><span class="num">STEP 01</span><span class="lbl">Biometrics</span></div>
+      <div class="wiz-step" id="wiz-2" onclick="navToStep(2)"><span class="num">STEP 02</span><span class="lbl">Library &amp; Goals</span></div>
+      <div class="wiz-step" id="wiz-3" onclick="navToStep(3)"><span class="num">STEP 03</span><span class="lbl">Dose &amp; Potency</span></div>
+      <div class="wiz-step" id="wiz-4" onclick="navToStep(4)"><span class="num">STEP 04</span><span class="lbl">Stack Review</span></div>
+      <div class="wiz-step" id="wiz-5" onclick="navToStep(5)"><span class="num">STEP 05</span><span class="lbl">Fill Auto-Pens</span></div>
+    </div>
+
+    <!-- STEP 1: BIOMETRICS -->
+    <div class="step-panel active" id="step-1">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Biometric Calibration</span>Establish Body Profile &amp; Mass Scaler</div>
+        </div>
+        
+        <div class="grid-3" style="margin-bottom:16px;">
+          <div class="field">
+            <label>Age (Years)</label>
+            <input id="userAge" type="number" value="38" oninput="recalcBiometrics()">
+          </div>
+          <div class="field">
+            <label>Body Weight (lbs)</label>
+            <input id="userWeight" type="number" value="300" oninput="recalcBiometrics()">
+          </div>
+          <div class="field">
+            <label>Height (Inches)</label>
+            <input id="userHeight" type="number" value="73" oninput="recalcBiometrics()">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Body Shape Profile</label>
+            <select id="userBodyShape" onchange="recalcBiometrics()">
+              <option value="endomorph" selected>Endomorph (High Fat Retention / Stocky Frame)</option>
+              <option value="mesomorph">Mesomorph (Athletic / Broad Structure)</option>
+              <option value="ectomorph">Ectomorph (Lean / Fast Metabolism)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Blood Type</label>
+            <select id="userBloodType">
+              <option value="O+">O Positive</option>
+              <option value="O-">O Negative</option>
+              <option value="A+">A Positive</option>
+              <option value="A-">A Negative</option>
+              <option value="B+">B Positive</option>
+              <option value="B-">B Negative</option>
+              <option value="AB+">AB Positive</option>
+              <option value="AB-">AB Negative</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Calculated BMI</span>
+            <div id="bmiReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">39.6</div>
+          </div>
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Mass Scaling Factor</span>
+            <div id="scaleReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--teal);margin-top:4px;">1.50x</div>
+          </div>
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Daily Protein Target</span>
+            <div id="proteinReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">180g / day</div>
+          </div>
+          <div>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Profile Category</span>
+            <div id="statusReadout" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ivory);margin-top:8px;">High Mass / Endomorph</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <div></div>
+          <button class="btn" onclick="navToStep(2)">Proceed to Library &amp; Goals →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: LIBRARY -->
+    <div class="step-panel" id="step-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Selection Engine</span>Full Peptide Library (Click Any Card for Details)</div>
+        </div>
+
+        <div class="lifestyle-box">
+          <h4>🥩 Reclaim Control: Mandatory 180g Protein &amp; Safety Protocols</h4>
+          You must consume <b>180g of complete protein/day</b> and complete <b>3–4 resistance sessions/week</b> to protect muscle mass on incretins. Always use BAC water, swirl gently (never shake), and refrigerate reconstituted vials.
+        </div>
+
+        <div class="dashboard-grid">
+          <div>
+            <div class="search-bar-box">
+              <div class="field">
+                <label style="color:var(--gold-light);font-size:12px;font-weight:600;">🔍 Search Library by Code or Common Name (e.g. "Mounjaro", "GLP1", "GLP3", "BPC", "Retatrutide")</label>
+                <input id="searchInput" type="text" placeholder="Type peptide code or brand (e.g. Mounjaro, Ozempic, GLP1, GLP3, BC10)..." oninput="onSearchInput(this.value)">
+              </div>
+            </div>
+
+            <div class="goal-pills">
+              <div class="pill active" onclick="filterGoal('all', this)">🌐 Full Atlas Library (33+)</div>
+              <div class="pill" onclick="filterGoal('Metabolic / Endurance', this)">🔥 Fat Loss &amp; Metabolic</div>
+              <div class="pill" onclick="filterGoal('Healing / Anti-inflammatory', this)">🩹 Repair &amp; Autoimmune</div>
+              <div class="pill" onclick="filterGoal('Neuro / Focus', this)">🧠 Neuro &amp; Mitochondria</div>
+              <div class="pill" onclick="filterGoal('Hormone / Growth', this)">🌙 Hormones &amp; Sleep</div>
+              <div class="pill" onclick="filterGoal('Specialty / Signaling', this)">⚡ Sexual &amp; Specialty</div>
+            </div>
+
+            <div class="comp-grid" id="compGrid"></div>
+          </div>
+
+          <div>
+            <div class="sidebar-box">
+              <div class="sidebar-title">💉 Syringe Volume (U-100)</div>
+              <table class="tick-table">
+                <thead><tr><th>UNITS</th><th>APPROX. VOLUME</th></tr></thead>
+                <tbody>
+                  <tr><td>5 Units</td><td style="color:var(--teal);">0.05 mL</td></tr>
+                  <tr><td>10 Units</td><td style="color:var(--teal);">0.10 mL</td></tr>
+                  <tr><td>20 Units</td><td style="color:var(--teal);">0.20 mL</td></tr>
+                  <tr><td>25 Units</td><td style="color:var(--teal);">0.25 mL</td></tr>
+                  <tr><td>30 Units</td><td style="color:var(--teal);">0.30 mL</td></tr>
+                  <tr><td>50 Units</td><td style="color:var(--teal);">0.50 mL</td></tr>
+                  <tr><td>100 Units</td><td style="color:var(--gold-light);">1.00 mL</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="sidebar-box">
+              <div class="sidebar-title">⚡ Concentration Rules</div>
+              <div style="font-size:11.5px;font-family:'IBM Plex Mono',monospace;line-height:1.6;color:var(--gold-light);">
+                • <b>2 mg/mL:</b> 1 mg = 50 U (0.50 mL)<br>
+                • <b>5 mg/mL:</b> 1 mg = 20 U (0.20 mL)<br>
+                • <b>10 mg/mL:</b> 1 mg = 10 U (0.10 mL)<br>
+                • <b>20 mg/mL:</b> 1 mg = 5 U (0.05 mL)<br>
+                • <b>100 mg/mL:</b> 1 mg = 1 U (0.01 mL)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn ghost" onclick="navToStep(1)">← Back</button>
+          <button class="btn" onclick="navToStep(3)">Tune Dose &amp; Potency →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: DOSAGE TUNING -->
+    <div class="step-panel" id="step-3">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Dose &amp; Reconstitution Engine</span>Tune Dose Tiers &amp; Edit Specific Vial Mixing Potency</div>
+        </div>
+        <div id="doseTuningContainer"></div>
+
+        <div class="btn-row">
+          <button class="btn ghost" onclick="navToStep(2)">← Back</button>
+          <button class="btn" onclick="navToStep(4)">Run AI Stack Review →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: STACK REVIEW -->
+    <div class="step-panel" id="step-4">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Engine Validation</span>Review Stack, Syringe Draw Volume &amp; Flags</div>
+        </div>
+        <div id="stackReviewList"></div>
+        <div id="approvalFlags" style="margin-top:16px;"></div>
+
+        <!-- ACTION BANNER DISCLAIMER -->
+        <div class="legal-warning-box">
+          <b>⚠️ RESEARCH CALCULATION NOTICE:</b> All measurements, volume ratios, and syringe unit calculations generated on this screen are theoretical research models for laboratory evaluation only. They do not constitute medical prescriptions or clinical therapeutic guidance.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn ghost" onclick="navToStep(3)">← Back</button>
+          <button class="btn" onclick="approveAndProceed()">Approve &amp; Calculate Auto-Pens →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5: FILL AUTO-PENS -->
+    <div class="step-panel" id="step-5">
+      <div class="panel">
+        <div class="panel-head">
+          <div><span class="eyebrow">Auto-Pen Cartridge Blueprint</span>Final Reconstitution &amp; Injection Blueprints</div>
+        </div>
+        <div id="penBlueprintContainer"></div>
+
+        <div class="btn-row">
+          <button class="btn ghost" onclick="navToStep(4)">← Edit Stack</button>
+          <button class="btn" onclick="window.print()">🖨️ Print Pen Guide</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINT FOOTER -->
+    <div class="print-footer">
+      Research Protocol Blueprint — For Laboratory Reference Only. Not a Medical Prescription.<br>
+      Generated via Mindstorm Labs / The Lion Clinic Protocol OS.
+    </div>
+  </div>
+</template>
+
 <script>
-/* ===================== COMPLETE 33+ PEPTIDE DATABASE ===================== */
+/* ===================== PEPTIDE DATABASE ===================== */
 const PEPTIDES = [
-  // --- METABOLIC / FAT LOSS / ENERGY ---
-  {code:"RT60",name:"Retatrutide (GLP-3 Triple Agonist)",aliases:"Retatrutide, GLP3, Triple Agonist, RT60",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:60,defaultWater:3,
-   micro:0.5, starter:1.0, maint:2.0, super:8.0, unit:"mg",
-   desc:"Triple agonist (GLP-1, GIP, Glucagon) driving resting thermogenesis and hepatic fat oxidation.",
-   humanTrial:"Human Phase 3 (TRIUMPH)",animalTrial:"DIO Rodent Chambers",
-   up:"Highest weight loss recorded (~24–28%).",down:"GI distress, resting heart rate elevation during titration.",
-   conflicts:"Avoid stacking with other full-dose incretins. Mandatory 180g protein rule."},
-
-  {code:"NJ1000",name:"NAD+",aliases:"NAD+, NAD, NJ1000, Nicotinamide Adenine Dinucleotide",cat:"Metabolic / Endurance",timing:"AM",defaultMg:100,defaultWater:5,
-   micro:50, starter:100, maint:150, super:250, unit:"mg",
-   desc:"Essential cellular coenzyme fueling mitochondrial sirtuins (SIRT1-7) and DNA repair.",
-   humanTrial:"Extensive Human Data",animalTrial:"Decades of Aging Research",
-   up:"Restores cellular energy, mental clarity, and supports DNA repair.",down:"Fast injections cause hot flushing and chest tightness.",
-   conflicts:"Inject slowly subcutaneous to minimize flushing."},
-
-  {code:"MS40",name:"MOTS-C (Human)",aliases:"MOTS-c, MOTSc, MS40, MS10, Mitochondrial Peptide",cat:"Metabolic / Endurance",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:2.0, starter:5.0, maint:7.5, super:10.0, unit:"mg",
-   desc:"Mitochondrial-derived peptide regulating AMPK, enhancing muscle insulin sensitivity and fatty acid oxidation.",
-   humanTrial:"Human Phase 1 Clinical Trials",animalTrial:"Extensive Metabolic Chamber Data",
-   up:"Acts as an 'exercise mimetic'; boosts fat metabolism.",down:"Transient fatigue during adaptation.",
-   conflicts:"Pairs well with SS-31 and exercise."},
-
-  {code:"AR50",name:"AICAR",aliases:"Aicar, AR50, AMPK Activator",cat:"Metabolic / Endurance",timing:"AM",defaultMg:50,defaultWater:2.5,
-   micro:10, starter:20, maint:35, super:50, unit:"mg",
-   desc:"Direct AMPK activator that stimulates fat oxidation, endurance, and glucose uptake without ATP depletion.",
-   humanTrial:"Human Phase 1/2 Clinical Data",animalTrial:"Extensive Endurance Rodent Models",
-   up:"Dramatic endurance and metabolic boosts; mimics physical exercise.",down:"Large injection volume (up to 2.5 mL); glucose instability risk.",
-   conflicts:"Avoid combining with heavy CNS or mitochondrial stimulants."},
-
-  {code:"GLP1",name:"Semaglutide (GLP-1)",aliases:"GLP-1, Ozempic, Wegovy, Rybelsus, Semaglutide, GLP1",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:5,defaultWater:2,
-   micro:0.25, starter:0.5, maint:1.0, super:2.4, unit:"mg",
-   desc:"Selective GLP-1 receptor agonist slowing gastric emptying and regulating brain satiety centers.",
-   humanTrial:"FDA Approved (Phase 3+)",animalTrial:"15+ Years Primate/Rodent",
-   up:"Predictable weight loss, strong cardiovascular benefit.",down:"Nausea, muscle loss if 180g protein rule ignored.",
-   conflicts:"Do not stack with other full-dose incretins without titration."},
-
-  {code:"GLP1_GIP",name:"Tirzepatide (Mounjaro / Zepbound)",aliases:"Mounjaro, Zepbound, Tirzepatide, GLP1_GIP, GIP Dual Agonist",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:10,defaultWater:2,
-   micro:1.25, starter:2.5, maint:5.0, super:15.0, unit:"mg",
-   desc:"Dual GLP-1 and GIP receptor agonist boosting glucose control, lipid oxidation, and weight loss.",
-   humanTrial:"FDA Approved (Mounjaro / Zepbound)",animalTrial:"Primate & Rodent Trials",
-   up:"Superior total weight loss (~21%+ in clinical trials).",down:"Large volume at higher dosage tiers.",
-   conflicts:"Avoid stacking with duplicate full-dose GLP-1 monotherapy."},
-
-  {code:"AOD9604",name:"AOD-9604",aliases:"AOD 9604, AOD9604, Lipolytic Fragment",cat:"Metabolic / Endurance",timing:"AM",defaultMg:5,defaultWater:2,
-   micro:250, starter:500, maint:750, super:1000, unit:"mcg",
-   desc:"Modified C-terminal fragment of HGH (177-191) targeting lipolysis without impacting blood sugar or IGF-1.",
-   humanTrial:"Human Phase 2 Metabolic Data",animalTrial:"Obesity Rodent Models",
-   up:"Stimulates fat release without insulin resistance risks.",down:"Requires strict fasting window post-injection.",
-   conflicts:"Administer fasting in the morning for maximum efficacy."},
-
-  {code:"CGT10",name:"Cagrilintide",aliases:"Cagrilintide, CagriSema, CGT10, Amylin Agonist",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:10,defaultWater:2,
-   micro:125, starter:250, maint:375, super:500, unit:"mcg",
-   desc:"Long-acting Amylin analogue targeting brainstem satiety signals independently from GLP-1.",
-   humanTrial:"Human Phase 2/3 Clinical Trials",animalTrial:"Primate & Rodent Satiety Assays",
-   up:"Profound appetite control and reduced food cravings.",down:"Nausea; risk of excessive appetite suppression.",
-   conflicts:"Do not stack with heavy oral appetite suppressants."},
-
-  {code:"LC1200",name:"L-Carnitine (Injectable)",aliases:"L-Carnitine, LC1200, Carnitine",cat:"Metabolic / Endurance",timing:"AM",defaultMg:500,defaultWater:1,
-   micro:200, starter:300, maint:400, super:600, unit:"mg",
-   desc:"Amino acid derivative powering fatty acid transport into mitochondria for ATP oxidation.",
-   humanTrial:"Extensive Human Data",animalTrial:"Decades of Metabolic Literature",
-   up:"Enhances fat oxidation and exercise capacity.",down:"Requires Intramuscular (IM) injection due to volume.",
-   conflicts:"Administer IM to prevent subcutaneous irritation."},
-
-  {code:"5AMQ",name:"5-amino-1MQ",aliases:"5-amino-1MQ, 5AMQ, NNMT Inhibitor",cat:"Metabolic / Endurance",timing:"AM",defaultMg:50,defaultWater:1,
-   micro:50, starter:100, maint:150, super:200, unit:"mg",
-   desc:"Selective NNMT enzyme inhibitor slowing fat cell storage and increasing intracellular NAD+ pools.",
-   humanTrial:"Translational Research",animalTrial:"Diet-Induced Obesity Models",
-   up:"Prevents lipogenesis and boosts cellular energy metabolism.",down:"Oral/custom pre-mix requirements.",
-   conflicts:"Targeted fat cell enzyme inhibitor."},
-
-  // --- REPAIR / HEALING / ANTI-INFLAMMATORY ---
-  {code:"BC10",name:"BPC-157",aliases:"BPC-157, BPC157, BC10, BC5, Wolverine",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2.5,
-   micro:250, starter:350, maint:500, super:750, unit:"mcg",
-   desc:"Gastric pentadecapeptide accelerating tendon, ligament, gut mucosa, and systemic wound tissue repair.",
-   humanTrial:"Phase 1 / Clinical Case Series",animalTrial:"Hundreds of Rodent Tendon/GI Studies",
-   up:"Remarkable soft tissue and gut mucosal healing; non-hormonal.",down:"Overhyped online as an overnight cure-all.",
-   conflicts:"Synergizes well with TB-500. Safe to combine in syringe."},
-
-  {code:"BT10",name:"TB-500 (Thymosin Beta-4)",aliases:"TB-500, TB500, BT10, Thymosin Beta 4",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:2.0, starter:3.0, maint:4.0, super:5.0, unit:"mg",
-   desc:"Actin-sequestering peptide promoting cell migration, angiogenesis, and systemic tissue flexibility.",
-   humanTrial:"Human Phase 2 Clinical Data",animalTrial:"Equine & Rodent Recovery Studies",
-   up:"Systemic recovery distribution; excellent for joint stiffness and tears.",down:"Slower initial onset than site injections.",
-   conflicts:"Synergizes seamlessly with BPC-157."},
-
-  {code:"CU50",name:"GHK-Cu Copper Peptide",aliases:"GHK-Cu, GHK Cu, CU50, Copper Peptide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:50,defaultWater:5,
-   micro:1.0, starter:1.5, maint:2.0, super:3.0, unit:"mg",hasCopper:true,
-   desc:"Copper tripeptide modulating 4,000+ genes to upregulate collagen I/III, elastin, and skin repair.",
-   humanTrial:"Extensive Human Clinical Data",animalTrial:"50+ Years Tissue Remodeling Data",
-   up:"Improves skin elasticity, hair follicle density, and tissue regeneration.",down:"Injections cause stinging if unbuffered.",
-   conflicts:"Do not pre-mix in the same vial with incretins or acidic peptides."},
-
-  {code:"KP10",name:"KPV (α-MSH Fragment)",aliases:"KPV, KP10, MSH Fragment, Gut Anti-inflammatory",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:250, starter:350, maint:500, super:750, unit:"mcg",
-   desc:"Tripeptide fragment inhibiting NF-κB inflammatory pathways in intestinal cells and mucosa.",
-   humanTrial:"Human Phase 1 Clinical Data",animalTrial:"Rodent Colitis & Gut Inflammation Models",
-   up:"Potent gut mucosal anti-inflammatory without immunosuppression.",down:"Short biological half-life.",
-   conflicts:"Synergizes well with BPC-157 for intestinal repair."},
-
-  {code:"GLP2",name:"Teduglutide (GLP-2 Gut)",aliases:"GLP-2, GLP2, Gattex, Teduglutide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:0.25, starter:0.5, maint:1.0, super:2.0, unit:"mg",
-   desc:"GLP-2 receptor variant dedicated to intestinal mucosa growth and villi expansion.",
-   humanTrial:"FDA Approved (Short Bowel)",animalTrial:"Intestinal Adaptation Models",
-   up:"Directly repairs gut mucosal lining and villi integrity.",down:"Not designed for general weight loss.",
-   conflicts:"Targeted for gastrointestinal mucosa."},
-
-  {code:"ARA10",name:"ARA-290 (Cibinetide)",aliases:"ARA-290, ARA290, Cibinetide, ARA10, Nerve Repair",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:1.0, starter:2.0, maint:3.0, super:4.0, unit:"mg",
-   desc:"Selectively activates Innate Repair Receptors (IRR) to promote nerve repair and reduce neuro-inflammation.",
-   humanTrial:"Human Phase 2 Clinical Trials",animalTrial:"Diabetic Neuropathy Models",
-   up:"Direct small fiber nerve repair without raising red blood cell counts.",down:"Experimental profile; potential immune modulation.",
-   conflicts:"None major."},
-
-  {code:"TA5",name:"Thymosin Alpha-1",aliases:"Thymosin Alpha 1, TA1, TA5, Zadaxin",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:5,defaultWater:2.5,
-   micro:0.5, starter:1.0, maint:1.5, super:3.0, unit:"mg",
-   desc:"Immunomodulatory peptide enhancing T-cell and NK cell maturation while balancing cytokines.",
-   humanTrial:"Approved in 35+ Countries (Zadaxin)",animalTrial:"Extensive Viral & Immune Literature",
-   up:"Restores immune function; protective during illness/travel.",down:"Transient flu-like response during early activation.",
-   conflicts:"Non-interfering."},
-
-  {code:"VIP10",name:"VIP (Vasoactive Intestinal Peptide)",aliases:"VIP, VIP10, CIRS Peptide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:5,
-   micro:50, starter:100, maint:150, super:200, unit:"mcg",
-   desc:"Neuropeptide suppressing pro-inflammatory cytokines and normalizing circadian rhythms in CIRS/Lyme.",
-   humanTrial:"Human Phase 2 Clinical Data",animalTrial:"Immune & Circadian Rodent Models",
-   up:"Normalizes neuro-immune inflammation.",down:"Vasodilation causes flushing and blood pressure drops.",
-   conflicts:"Avoid mixing with heavy blood pressure medications without monitoring."},
-
-  {code:"KLOW80",name:"KLOW80 Stack Blend",aliases:"KLOW80, KLOW, Super Healing Blend",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:80,defaultWater:3,
-   micro:0.5, starter:1.0, maint:1.5, super:2.0, unit:"mg",hasCopper:true,
-   desc:"Pre-blended super-healing stack (GHK-Cu + TB-500 + BPC-157 + KPV) providing all-in-one recovery.",
-   humanTrial:"Constituents Phase 1–3 Data",animalTrial:"Extensive Soft Tissue/Gut Literature",
-   up:"All-in-one healing synergy; BPC-157 eliminates GHK-Cu injection sting.",down:"Complex multi-compound blend.",
-   conflicts:"⚠️ NOT a single-dose compound. Requires careful calculation of constituent doses."},
-
-  // --- NEURO / MITOCHONDRIA / FOCUS ---
-  {code:"2S10",name:"SS-31 (Elamipretide)",aliases:"SS-31, SS31, 2S10, Elamipretide, Cardiolipin",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:0.5, starter:1.0, maint:1.5, super:2.0, unit:"mg",
-   desc:"Selectively binds cardiolipin in inner mitochondrial membranes, restoring electron transport efficiency and ATP.",
-   humanTrial:"Human Phase 2/3 Clinical Trials",animalTrial:"Cardiac & Renal Animal Models",
-   up:"Directly restores cellular energy; non-stimulatory vitality.",down:"Requires unbroken daily cycles.",
-   conflicts:"Pairs well with MOTS-c and NAD+."},
-
-  {code:"SX10",name:"Semax",aliases:"Semax, SX10, BDNF Nootropic",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:200, starter:500, maint:750, super:1000, unit:"mcg",
-   desc:"Upregulates BDNF and TrkB signaling in the hippocampus for memory, focus, and neuroprotection.",
-   humanTrial:"Approved Prescription (Eastern Europe)",animalTrial:"Decades of Neuroprotection Data",
-   up:"Fast cognitive clarity, mood support, and focus without jitters.",down:"Insomnia if taken past mid-day.",
-   conflicts:"Avoid late PM dosing."},
-
-  {code:"SK10",name:"Selank",aliases:"Selank, SK10, Tuftsin Analogue, Anxiolytic",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:250, starter:350, maint:500, super:750, unit:"mcg",
-   desc:"Synthetic analogue of Tuftsin that modulates enkephalin degradation and GABAergic signaling to reduce anxiety.",
-   humanTrial:"Approved Prescription (Eastern Europe)",animalTrial:"Rodent Anxiety & Memory Models",
-   up:"Anxiolytic effect without sedation or mental slowing.",down:"Mild lethargy in sensitive users.",
-   conflicts:"Synergizes well with Semax."},
-
-  {code:"DS5",name:"DSIP (Delta Sleep)",aliases:"DSIP, DS5, Delta Sleep Inducing Peptide",cat:"Neuro / Focus",timing:"PM",defaultMg:5,defaultWater:2.5,
-   micro:100, starter:150, maint:200, super:300, unit:"mcg",
-   desc:"Neuromodulatory peptide normalizing slow-wave delta sleep cycles and modulating stress hormones.",
-   humanTrial:"Human Clinical Trials (Insomnia)",animalTrial:"Rodent Sleep EEG Research",
-   up:"Promotes deep, restorative slow-wave sleep.",down:"Bell-shaped response curve (higher doses work worse).",
-   conflicts:"Keep doses small; avoid combining with heavy pharmaceutical sedatives."},
-
-  // --- HORMONE / SLEEP / RECOVERY ---
-  {code:"TSM10",name:"Tesamorelin",aliases:"Tesamorelin, TSM10, Egrifta",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,
-   micro:1.0, starter:1.5, maint:2.0, super:2.0, unit:"mg",
-   desc:"Stabilized GHRH analogue targeting pituitary somatotrophs to reduce deep visceral adipose fat.",
-   humanTrial:"FDA Approved (Egrifta)",animalTrial:"Primate Pituitary Studies",
-   up:"Reduces visceral fat; enhances slow-wave deep sleep.",down:"Transient water retention or glucose changes.",
-   conflicts:"Must be taken on a strictly empty stomach (2+ hours post-food)."},
-
-  {code:"CP10",name:"CJC-1295 (No DAC) + Ipamorelin",aliases:"CJC-1295, Ipamorelin, CP10, CJC/Ipa, GH Pulse",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,
-   micro:100, starter:200, maint:300, super:500, unit:"mcg",
-   desc:"Synergistic GHRH and Ghrelin-receptor secretagogues stimulating natural GH pulses without cortisol spikes.",
-   humanTrial:"Human Phase 1/2 Clinical Trials",animalTrial:"Extensive Rodent GH Pulse Literature",
-   up:"Clean Growth Hormone pulse; enhances deep sleep and lean mass.",down:"Mild transient water retention.",
-   conflicts:"Strictly avoid carbs or fats 2 hours prior to dosing."},
-
-  {code:"SMO5",name:"Sermorelin",aliases:"Sermorelin, SMO5, GHRH 1-29",cat:"Hormone / Growth",timing:"PM",defaultMg:5,defaultWater:2,
-   micro:100, starter:200, maint:300, super:500, unit:"mcg",
-   desc:"Growth Hormone Releasing Hormone (GHRH 1-29) analogue stimulating endogenous pituitary GH release.",
-   humanTrial:"Human Clinical Data",animalTrial:"Pituitary Secretion Models",
-   up:"Gentle, natural growth hormone stimulation; improves sleep and recovery.",down:"Slower onset than Tesamorelin.",
-   conflicts:"Administer on an empty stomach at bedtime."},
-
-  {code:"ET10",name:"Epitalon",aliases:"Epitalon, Epithalon, ET10, Telomerase Peptide",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,
-   micro:5, starter:5, maint:10, super:10, unit:"mg",
-   desc:"Tetrapeptide upregulating telomerase activity, extending telomeres, and resetting pineal melatonin synthesis.",
-   humanTrial:"30+ Years Human Clinical Data (St. Petersburg)",animalTrial:"Lifespan Extension & Tumor Studies",
-   up:"Deep cellular longevity; resets circadian rhythm.",down:"Large unit volume required during cycle.",
-   conflicts:"Cycled compound (10–20 days on, repeated every 4–6 months)."},
-
-  {code:"H12",name:"HGH (Somatropin 191AA)",aliases:"HGH, Somatropin, H12, Growth Hormone",cat:"Hormone / Growth",timing:"PM",defaultMg:12,defaultWater:2,
-   micro:1, starter:1.5, maint:2, super:3, unit:"mg",
-   desc:"Direct recombinant Growth Hormone promoting hepatic IGF-1 generation, lipolysis, and tissue synthesis.",
-   humanTrial:"FDA Approved / Extensive Clinical Data",animalTrial:"Decades of Endocrinology Research",
-   up:"Gold standard recovery, fat loss, and skin/tissue density.",down:"Insulin resistance risk, water retention, joint stiffness if abused.",
-   conflicts:"Requires regular blood work monitoring (IGF-1 / HbA1c)."},
-
-  // --- SEXUAL / HORMONAL SIGNALING & SPECIALTY ---
-  {code:"PT10",name:"PT-141 (Bremelanotide)",aliases:"PT-141, PT141, PT10, Bremelanotide, Vyleesi",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:500, starter:750, maint:1000, super:1750, unit:"mcg",
-   desc:"Central nervous system Melanocortin Receptor 4 (MC4R) agonist directly activating brain arousal pathways.",
-   humanTrial:"FDA Approved (Vyleesi)",animalTrial:"Neuro-endocrine Primate Models",
-   up:"Profound central libido and arousal enhancement.",down:"Nausea, facial flushing, temporary blood pressure rise.",
-   conflicts:"Do not use daily; avoid combining with heavy vasodilators without caution."},
-
-  {code:"KISS10",name:"Kisspeptin-10",aliases:"Kisspeptin, Kisspeptin-10, KISS10, kiss",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:100, starter:250, maint:350, super:500, unit:"mcg",
-   desc:"Upstream activator of the HPG axis, stimulating endogenous GnRH release to support LH/FSH production.",
-   humanTrial:"Human Phase 2 Clinical Trials",animalTrial:"Endocrine Reproductive Models",
-   up:"Natural pulsatile restoration of LH and testosterone.",down:"Short half-life.",
-   conflicts:"Monitor hormonal axis labs."},
-
-  {code:"MT1",name:"Melanotan-I",aliases:"Melanotan 1, Melanotan-I, MT1, Afamelanotide",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:250, starter:500, maint:750, super:1000, unit:"mcg",
-   desc:"Selective Melanocortin Receptor 1 (MC1R) agonist stimulating natural skin melanin production.",
-   humanTrial:"Human Clinical Trials",animalTrial:"Pigmentation Rodent Models",
-   up:"Promotes natural skin pigmentation without heavy UV exposure.",down:"Transient nausea; freckle/mole darkening.",
-   conflicts:"Do not over-use."},
-
-  {code:"MT2",name:"Melanotan-II",aliases:"Melanotan 2, Melanotan-II, MT2, MT-II, Tanning Peptide",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,
-   micro:100, starter:250, maint:350, super:500, unit:"mcg",
-   desc:"Non-selective Melanocortin receptor agonist influencing skin tanning, appetite suppression, and libido.",
-   humanTrial:"Human Clinical Data",animalTrial:"Rodent Melanocortin Studies",
-   up:"Rapid tanning acceleration and libido enhancement.",down:"Nausea, facial flushing, spontaneous erections.",
-   conflicts:"Titrate slowly."},
-
-  {code:"GTT600",name:"Glutathione",aliases:"Glutathione, GTT600, GSH, Master Antioxidant",cat:"Specialty / Signaling",timing:"AM",defaultMg:600,defaultWater:3,
-   micro:200, starter:300, maint:400, super:600, unit:"mg",
-   desc:"Master intracellular antioxidant powering cellular detox, hepatic clearance, and immune function.",
-   humanTrial:"Extensive Human Medical Data",animalTrial:"Decades of Toxicological Studies",
-   up:"Potent systemic detoxification and skin brightness.",down:"Sulfur breath/burps; mild flushing.",
-   conflicts:"None major."}
+  {code:"RT60",name:"Retatrutide (GLP-3 Triple Agonist)",aliases:"Retatrutide, GLP3, Triple Agonist, RT60",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:60,defaultWater:3,micro:0.5,starter:1.0,maint:2.0,super:8.0,unit:"mg",desc:"Triple agonist (GLP-1, GIP, Glucagon) driving resting thermogenesis and hepatic fat oxidation.",humanTrial:"Human Phase 3 (TRIUMPH)",animalTrial:"DIO Rodent Chambers",up:"Highest weight loss recorded (~24–28%).",down:"GI distress, resting heart rate elevation during titration.",conflicts:"Avoid stacking with other full-dose incretins. Mandatory 180g protein rule."},
+  {code:"NJ1000",name:"NAD+",aliases:"NAD+, NAD, NJ1000, Nicotinamide Adenine Dinucleotide",cat:"Metabolic / Endurance",timing:"AM",defaultMg:100,defaultWater:5,micro:50,starter:100,maint:150,super:250,unit:"mg",desc:"Essential cellular coenzyme fueling mitochondrial sirtuins (SIRT1-7) and DNA repair.",humanTrial:"Extensive Human Data",animalTrial:"Decades of Aging Research",up:"Restores cellular energy, mental clarity, and supports DNA repair.",down:"Fast injections cause hot flushing and chest tightness.",conflicts:"Inject slowly subcutaneous to minimize flushing."},
+  {code:"MS40",name:"MOTS-C (Human)",aliases:"MOTS-c, MOTSc, MS40, MS10, Mitochondrial Peptide",cat:"Metabolic / Endurance",timing:"AM",defaultMg:10,defaultWater:2,micro:2.0,starter:5.0,maint:7.5,super:10.0,unit:"mg",desc:"Mitochondrial-derived peptide regulating AMPK, enhancing muscle insulin sensitivity and fatty acid oxidation.",humanTrial:"Human Phase 1 Clinical Trials",animalTrial:"Extensive Metabolic Chamber Data",up:"Acts as an 'exercise mimetic'; boosts fat metabolism.",down:"Transient fatigue during adaptation.",conflicts:"Pairs well with SS-31 and exercise."},
+  {code:"AR50",name:"AICAR",aliases:"Aicar, AR50, AMPK Activator",cat:"Metabolic / Endurance",timing:"AM",defaultMg:50,defaultWater:2.5,micro:10,starter:20,maint:35,super:50,unit:"mg",desc:"Direct AMPK activator that stimulates fat oxidation, endurance, and glucose uptake without ATP depletion.",humanTrial:"Human Phase 1/2 Clinical Data",animalTrial:"Extensive Endurance Rodent Models",up:"Dramatic endurance and metabolic boosts; mimics physical exercise.",down:"Large injection volume (up to 2.5 mL); glucose instability risk.",conflicts:"Avoid combining with heavy CNS or mitochondrial stimulants."},
+  {code:"GLP1",name:"Semaglutide (GLP-1)",aliases:"GLP-1, Ozempic, Wegovy, Rybelsus, Semaglutide, GLP1",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:5,defaultWater:2,micro:0.25,starter:0.5,maint:1.0,super:2.4,unit:"mg",desc:"Selective GLP-1 receptor agonist slowing gastric emptying and regulating brain satiety centers.",humanTrial:"FDA Approved (Phase 3+)",animalTrial:"15+ Years Primate/Rodent",up:"Predictable weight loss, strong cardiovascular benefit.",down:"Nausea, muscle loss if 180g protein rule ignored.",conflicts:"Do not stack with other full-dose incretins without titration."},
+  {code:"GLP1_GIP",name:"Tirzepatide (Mounjaro / Zepbound)",aliases:"Mounjaro, Zepbound, Tirzepatide, GLP1_GIP, GIP Dual Agonist",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:10,defaultWater:2,micro:1.25,starter:2.5,maint:5.0,super:15.0,unit:"mg",desc:"Dual GLP-1 and GIP receptor agonist boosting glucose control, lipid oxidation, and weight loss.",humanTrial:"FDA Approved (Mounjaro / Zepbound)",animalTrial:"Primate & Rodent Trials",up:"Superior total weight loss (~21%+ in clinical trials).",down:"Large volume at higher dosage tiers.",conflicts:"Avoid stacking with duplicate full-dose GLP-1 monotherapy."},
+  {code:"AOD9604",name:"AOD-9604",aliases:"AOD 9604, AOD9604, Lipolytic Fragment",cat:"Metabolic / Endurance",timing:"AM",defaultMg:5,defaultWater:2,micro:250,starter:500,maint:750,super:1000,unit:"mcg",desc:"Modified C-terminal fragment of HGH (177-191) targeting lipolysis without impacting blood sugar or IGF-1.",humanTrial:"Human Phase 2 Metabolic Data",animalTrial:"Obesity Rodent Models",up:"Stimulates fat release without insulin resistance risks.",down:"Requires strict fasting window post-injection.",conflicts:"Administer fasting in the morning for maximum efficacy."},
+  {code:"CGT10",name:"Cagrilintide",aliases:"Cagrilintide, CagriSema, CGT10, Amylin Agonist",cat:"Metabolic / Endurance",timing:"Weekly",defaultMg:10,defaultWater:2,micro:125,starter:250,maint:375,super:500,unit:"mcg",desc:"Long-acting Amylin analogue targeting brainstem satiety signals independently from GLP-1.",humanTrial:"Human Phase 2/3 Clinical Trials",animalTrial:"Primate & Rodent Satiety Assays",up:"Profound appetite control and reduced food cravings.",down:"Nausea; risk of excessive appetite suppression.",conflicts:"Do not stack with heavy oral appetite suppressants."},
+  {code:"LC1200",name:"L-Carnitine (Injectable)",aliases:"L-Carnitine, LC1200, Carnitine",cat:"Metabolic / Endurance",timing:"AM",defaultMg:500,defaultWater:1,micro:200,starter:300,maint:400,super:600,unit:"mg",desc:"Amino acid derivative powering fatty acid transport into mitochondria for ATP oxidation.",humanTrial:"Extensive Human Data",animalTrial:"Decades of Metabolic Literature",up:"Enhances fat oxidation and exercise capacity.",down:"Requires Intramuscular (IM) injection due to volume.",conflicts:"Administer IM to prevent subcutaneous irritation."},
+  {code:"5AMQ",name:"5-amino-1MQ",aliases:"5-amino-1MQ, 5AMQ, NNMT Inhibitor",cat:"Metabolic / Endurance",timing:"AM",defaultMg:50,defaultWater:1,micro:50,starter:100,maint:150,super:200,unit:"mg",desc:"Selective NNMT enzyme inhibitor slowing fat cell storage and increasing intracellular NAD+ pools.",humanTrial:"Translational Research",animalTrial:"Diet-Induced Obesity Models",up:"Prevents lipogenesis and boosts cellular energy metabolism.",down:"Oral/custom pre-mix requirements.",conflicts:"Targeted fat cell enzyme inhibitor."},
+  {code:"BC10",name:"BPC-157",aliases:"BPC-157, BPC157, BC10, BC5, Wolverine",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2.5,micro:250,starter:350,maint:500,super:750,unit:"mcg",desc:"Gastric pentadecapeptide accelerating tendon, ligament, gut mucosa, and systemic wound tissue repair.",humanTrial:"Phase 1 / Clinical Case Series",animalTrial:"Hundreds of Rodent Tendon/GI Studies",up:"Remarkable soft tissue and gut mucosal healing; non-hormonal.",down:"Overhyped online as an overnight cure-all.",conflicts:"Synergizes well with TB-500. Safe to combine in syringe."},
+  {code:"BT10",name:"TB-500 (Thymosin Beta-4)",aliases:"TB-500, TB500, BT10, Thymosin Beta 4",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,micro:2.0,starter:3.0,maint:4.0,super:5.0,unit:"mg",desc:"Actin-sequestering peptide promoting cell migration, angiogenesis, and systemic tissue flexibility.",humanTrial:"Human Phase 2 Clinical Data",animalTrial:"Equine & Rodent Recovery Studies",up:"Systemic recovery distribution; excellent for joint stiffness and tears.",down:"Slower initial onset than site injections.",conflicts:"Synergizes seamlessly with BPC-157."},
+  {code:"CU50",name:"GHK-Cu Copper Peptide",aliases:"GHK-Cu, GHK Cu, CU50, Copper Peptide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:50,defaultWater:5,micro:1.0,starter:1.5,maint:2.0,super:3.0,unit:"mg",hasCopper:true,desc:"Copper tripeptide modulating 4,000+ genes to upregulate collagen I/III, elastin, and skin repair.",humanTrial:"Extensive Human Clinical Data",animalTrial:"50+ Years Tissue Remodeling Data",up:"Improves skin elasticity, hair follicle density, and tissue regeneration.",down:"Injections cause stinging if unbuffered.",conflicts:"Do not pre-mix in the same vial with incretins or acidic peptides."},
+  {code:"KP10",name:"KPV (α-MSH Fragment)",aliases:"KPV, KP10, MSH Fragment, Gut Anti-inflammatory",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,micro:250,starter:350,maint:500,super:750,unit:"mcg",desc:"Tripeptide fragment inhibiting NF-κB inflammatory pathways in intestinal cells and mucosa.",humanTrial:"Human Phase 1 Clinical Data",animalTrial:"Rodent Colitis & Gut Inflammation Models",up:"Potent gut mucosal anti-inflammatory without immunosuppression.",down:"Short biological half-life.",conflicts:"Synergizes well with BPC-157 for intestinal repair."},
+  {code:"GLP2",name:"Teduglutide (GLP-2 Gut)",aliases:"GLP-2, GLP2, Gattex, Teduglutide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,micro:0.25,starter:0.5,maint:1.0,super:2.0,unit:"mg",desc:"GLP-2 receptor variant dedicated to intestinal mucosa growth and villi expansion.",humanTrial:"FDA Approved (Short Bowel)",animalTrial:"Intestinal Adaptation Models",up:"Directly repairs gut mucosal lining and villi integrity.",down:"Not designed for general weight loss.",conflicts:"Targeted for gastrointestinal mucosa."},
+  {code:"ARA10",name:"ARA-290 (Cibinetide)",aliases:"ARA-290, ARA290, Cibinetide, ARA10, Nerve Repair",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:2,micro:1.0,starter:2.0,maint:3.0,super:4.0,unit:"mg",desc:"Selectively activates Innate Repair Receptors (IRR) to promote nerve repair and reduce neuro-inflammation.",humanTrial:"Human Phase 2 Clinical Trials",animalTrial:"Diabetic Neuropathy Models",up:"Direct small fiber nerve repair without raising red blood cell counts.",down:"Experimental profile; potential immune modulation.",conflicts:"None major."},
+  {code:"TA5",name:"Thymosin Alpha-1",aliases:"Thymosin Alpha 1, TA1, TA5, Zadaxin",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:5,defaultWater:2.5,micro:0.5,starter:1.0,maint:1.5,super:3.0,unit:"mg",desc:"Immunomodulatory peptide enhancing T-cell and NK cell maturation while balancing cytokines.",humanTrial:"Approved in 35+ Countries (Zadaxin)",animalTrial:"Extensive Viral & Immune Literature",up:"Restores immune function; protective during illness/travel.",down:"Transient flu-like response during early activation.",conflicts:"Non-interfering."},
+  {code:"VIP10",name:"VIP (Vasoactive Intestinal Peptide)",aliases:"VIP, VIP10, CIRS Peptide",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:10,defaultWater:5,micro:50,starter:100,maint:150,super:200,unit:"mcg",desc:"Neuropeptide suppressing pro-inflammatory cytokines and normalizing circadian rhythms in CIRS/Lyme.",humanTrial:"Human Phase 2 Clinical Data",animalTrial:"Immune & Circadian Rodent Models",up:"Normalizes neuro-immune inflammation.",down:"Vasodilation causes flushing and blood pressure drops.",conflicts:"Avoid mixing with heavy blood pressure medications without monitoring."},
+  {code:"KLOW80",name:"KLOW80 Stack Blend",aliases:"KLOW80, KLOW, Super Healing Blend",cat:"Healing / Anti-inflammatory",timing:"AM",defaultMg:80,defaultWater:3,micro:0.5,starter:1.0,maint:1.5,super:2.0,unit:"mg",hasCopper:true,desc:"Pre-blended super-healing stack (GHK-Cu + TB-500 + BPC-157 + KPV) providing all-in-one recovery.",humanTrial:"Constituents Phase 1–3 Data",animalTrial:"Extensive Soft Tissue/Gut Literature",up:"All-in-one healing synergy; BPC-157 eliminates GHK-Cu injection sting.",down:"Complex multi-compound blend.",conflicts:"⚠️ NOT a single-dose compound. Requires careful calculation of constituent doses."},
+  {code:"2S10",name:"SS-31 (Elamipretide)",aliases:"SS-31, SS31, 2S10, Elamipretide, Cardiolipin",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,micro:0.5,starter:1.0,maint:1.5,super:2.0,unit:"mg",desc:"Selectively binds cardiolipin in inner mitochondrial membranes, restoring electron transport efficiency and ATP.",humanTrial:"Human Phase 2/3 Clinical Trials",animalTrial:"Cardiac & Renal Animal Models",up:"Directly restores cellular energy; non-stimulatory vitality.",down:"Requires unbroken daily cycles.",conflicts:"Pairs well with MOTS-c and NAD+."},
+  {code:"SX10",name:"Semax",aliases:"Semax, SX10, BDNF Nootropic",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,micro:200,starter:500,maint:750,super:1000,unit:"mcg",desc:"Upregulates BDNF and TrkB signaling in the hippocampus for memory, focus, and neuroprotection.",humanTrial:"Approved Prescription (Eastern Europe)",animalTrial:"Decades of Neuroprotection Data",up:"Fast cognitive clarity, mood support, and focus without jitters.",down:"Insomnia if taken past mid-day.",conflicts:"Avoid late PM dosing."},
+  {code:"SK10",name:"Selank",aliases:"Selank, SK10, Tuftsin Analogue, Anxiolytic",cat:"Neuro / Focus",timing:"AM",defaultMg:10,defaultWater:2,micro:250,starter:350,maint:500,super:750,unit:"mcg",desc:"Synthetic analogue of Tuftsin that modulates enkephalin degradation and GABAergic signaling to reduce anxiety.",humanTrial:"Approved Prescription (Eastern Europe)",animalTrial:"Rodent Anxiety & Memory Models",up:"Anxiolytic effect without sedation or mental slowing.",down:"Mild lethargy in sensitive users.",conflicts:"Synergizes well with Semax."},
+  {code:"DS5",name:"DSIP (Delta Sleep)",aliases:"DSIP, DS5, Delta Sleep Inducing Peptide",cat:"Neuro / Focus",timing:"PM",defaultMg:5,defaultWater:2.5,micro:100,starter:150,maint:200,super:300,unit:"mcg",desc:"Neuromodulatory peptide normalizing slow-wave delta sleep cycles and modulating stress hormones.",humanTrial:"Human Clinical Trials (Insomnia)",animalTrial:"Rodent Sleep EEG Research",up:"Promotes deep, restorative slow-wave sleep.",down:"Bell-shaped response curve (higher doses work worse).",conflicts:"Keep doses small; avoid combining with heavy pharmaceutical sedatives."},
+  {code:"TSM10",name:"Tesamorelin",aliases:"Tesamorelin, TSM10, Egrifta",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,micro:1.0,starter:1.5,maint:2.0,super:2.0,unit:"mg",desc:"Stabilized GHRH analogue targeting pituitary somatotrophs to reduce deep visceral adipose fat.",humanTrial:"FDA Approved (Egrifta)",animalTrial:"Primate Pituitary Studies",up:"Reduces visceral fat; enhances slow-wave deep sleep.",down:"Transient water retention or glucose changes.",conflicts:"Must be taken on a strictly empty stomach (2+ hours post-food)."},
+  {code:"CP10",name:"CJC-1295 (No DAC) + Ipamorelin",aliases:"CJC-1295, Ipamorelin, CP10, CJC/Ipa, GH Pulse",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,micro:100,starter:200,maint:300,super:500,unit:"mcg",desc:"Synergistic GHRH and Ghrelin-receptor secretagogues stimulating natural GH pulses without cortisol spikes.",humanTrial:"Human Phase 1/2 Clinical Trials",animalTrial:"Extensive Rodent GH Pulse Literature",up:"Clean Growth Hormone pulse; enhances deep sleep and lean mass.",down:"Mild transient water retention.",conflicts:"Strictly avoid carbs or fats 2 hours prior to dosing."},
+  {code:"SMO5",name:"Sermorelin",aliases:"Sermorelin, SMO5, GHRH 1-29",cat:"Hormone / Growth",timing:"PM",defaultMg:5,defaultWater:2,micro:100,starter:200,maint:300,super:500,unit:"mcg",desc:"Growth Hormone Releasing Hormone (GHRH 1-29) analogue stimulating endogenous pituitary GH release.",humanTrial:"Human Clinical Data",animalTrial:"Pituitary Secretion Models",up:"Gentle, natural growth hormone stimulation; improves sleep and recovery.",down:"Slower onset than Tesamorelin.",conflicts:"Administer on an empty stomach at bedtime."},
+  {code:"ET10",name:"Epitalon",aliases:"Epitalon, Epithalon, ET10, Telomerase Peptide",cat:"Hormone / Growth",timing:"PM",defaultMg:10,defaultWater:2,micro:5,starter:5,maint:10,super:10,unit:"mg",desc:"Tetrapeptide upregulating telomerase activity, extending telomeres, and resetting pineal melatonin synthesis.",humanTrial:"30+ Years Human Clinical Data (St. Petersburg)",animalTrial:"Lifespan Extension & Tumor Studies",up:"Deep cellular longevity; resets circadian rhythm.",down:"Large unit volume required during cycle.",conflicts:"Cycled compound (10–20 days on, repeated every 4–6 months)."},
+  {code:"H12",name:"HGH (Somatropin 191AA)",aliases:"HGH, Somatropin, H12, Growth Hormone",cat:"Hormone / Growth",timing:"PM",defaultMg:12,defaultWater:2,micro:1,starter:1.5,maint:2,super:3,unit:"mg",desc:"Direct recombinant Growth Hormone promoting hepatic IGF-1 generation, lipolysis, and tissue synthesis.",humanTrial:"FDA Approved / Extensive Clinical Data",animalTrial:"Decades of Endocrinology Research",up:"Gold standard recovery, fat loss, and skin/tissue density.",down:"Insulin resistance risk, water retention, joint stiffness if abused.",conflicts:"Requires regular blood work monitoring (IGF-1 / HbA1c)."},
+  {code:"PT10",name:"PT-141 (Bremelanotide)",aliases:"PT-141, PT141, PT10, Bremelanotide, Vyleesi",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,micro:500,starter:750,maint:1000,super:1750,unit:"mcg",desc:"Central nervous system Melanocortin Receptor 4 (MC4R) agonist directly activating brain arousal pathways.",humanTrial:"FDA Approved (Vyleesi)",animalTrial:"Neuro-endocrine Primate Models",up:"Profound central libido and arousal enhancement.",down:"Nausea, facial flushing, temporary blood pressure rise.",conflicts:"Do not use daily; avoid combining with heavy vasodilators without caution."},
+  {code:"KISS10",name:"Kisspeptin-10",aliases:"Kisspeptin, Kisspeptin-10, KISS10, kiss",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,micro:100,starter:250,maint:350,super:500,unit:"mcg",desc:"Upstream activator of the HPG axis, stimulating endogenous GnRH release to support LH/FSH production.",humanTrial:"Human Phase 2 Clinical Trials",animalTrial:"Endocrine Reproductive Models",up:"Natural pulsatile restoration of LH and testosterone.",down:"Short half-life.",conflicts:"Monitor hormonal axis labs."},
+  {code:"MT1",name:"Melanotan-I",aliases:"Melanotan 1, Melanotan-I, MT1, Afamelanotide",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,micro:250,starter:500,maint:750,super:1000,unit:"mcg",desc:"Selective Melanocortin Receptor 1 (MC1R) agonist stimulating natural skin melanin production.",humanTrial:"Human Clinical Trials",animalTrial:"Pigmentation Rodent Models",up:"Promotes natural skin pigmentation without heavy UV exposure.",down:"Transient nausea; freckle/mole darkening.",conflicts:"Do not over-use."},
+  {code:"MT2",name:"Melanotan-II",aliases:"Melanotan 2, Melanotan-II, MT2, MT-II, Tanning Peptide",cat:"Specialty / Signaling",timing:"AM",defaultMg:10,defaultWater:2,micro:100,starter:250,maint:350,super:500,unit:"mcg",desc:"Non-selective Melanocortin receptor agonist influencing skin tanning, appetite suppression, and libido.",humanTrial:"Human Clinical Data",animalTrial:"Rodent Melanocortin Studies",up:"Rapid tanning acceleration and libido enhancement.",down:"Nausea, facial flushing, spontaneous erections.",conflicts:"Titrate slowly."},
+  {code:"GTT600",name:"Glutathione",aliases:"Glutathione, GTT600, GSH, Master Antioxidant",cat:"Specialty / Signaling",timing:"AM",defaultMg:600,defaultWater:3,micro:200,starter:300,maint:400,super:600,unit:"mg",desc:"Master intracellular antioxidant powering cellular detox, hepatic clearance, and immune function.",humanTrial:"Extensive Human Medical Data",animalTrial:"Decades of Toxicological Studies",up:"Potent systemic detoxification and skin brightness.",down:"Sulfur breath/burps; mild flushing.",conflicts:"None major."}
 ];
 
-/* ===================== HARD GATE CONTROL ENGINE ===================== */
+/* ===================== GATE & STATE CONTROLLER ===================== */
 let currentStep = 1;
 let selectedStack = new Map();
 let activeGoalFilter = 'all';
 let searchQuery = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('todayChip').textContent = new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-  recalcBiometrics();
-  renderLibrary();
-  checkGateStatus();
+  evaluateGates();
 });
 
-function checkGateStatus() {
-  const legalGate = document.getElementById('legalGateBg');
-  const emailWall = document.getElementById('emailWallBg');
-  const mainApp = document.getElementById('mainApp');
+function evaluateGates() {
+  const isLegalPassed = localStorage.getItem('lionLegalGateCleared') === 'true';
+  const isLeadPassed = localStorage.getItem('lionLeadCaptured') !== null;
 
-  const isLegalCleared = localStorage.getItem('lionLegalGateCleared') === 'true';
-  const isLeadCaptured = localStorage.getItem('lionLeadCaptured') !== null;
+  const gateContainer = document.getElementById('gateContainer');
+  const gateCard1 = document.getElementById('gateCard1');
+  const gateCard2 = document.getElementById('gateCard2');
 
-  if (!isLegalCleared) {
-    // Show Gate 1: Age Gate
-    legalGate.style.display = 'flex';
-    emailWall.style.display = 'none';
-    mainApp.style.display = 'none';
-  } else if (!isLeadCaptured) {
-    // Show Gate 2: Email Lead Wall
-    legalGate.style.display = 'none';
-    emailWall.style.display = 'flex';
-    mainApp.style.display = 'none';
+  if (!isLegalPassed) {
+    gateContainer.style.display = 'flex';
+    gateCard1.style.display = 'block';
+    gateCard2.style.display = 'none';
+  } else if (!isLeadPassed) {
+    gateContainer.style.display = 'flex';
+    gateCard1.style.display = 'none';
+    gateCard2.style.display = 'block';
   } else {
-    // Fully Unlocked
-    legalGate.style.display = 'none';
-    emailWall.style.display = 'none';
-    mainApp.style.display = 'block';
+    gateContainer.style.display = 'none';
+    mountApp();
   }
 }
 
-function acceptLegalGate(){
+function passGate1() {
   localStorage.setItem('lionLegalGateCleared', 'true');
-  checkGateStatus();
+  evaluateGates();
 }
 
-function submitLeadCapture(event){
+function passGate2(event) {
   event.preventDefault();
   const leadData = {
     name: document.getElementById('leadName').value,
@@ -725,13 +589,33 @@ function submitLeadCapture(event){
   };
 
   localStorage.setItem('lionLeadCaptured', JSON.stringify(leadData));
-  checkGateStatus();
+  evaluateGates();
 }
 
-/* ===================== APPLICATION NAVIGATION & CALCULATORS ===================== */
+function mountApp() {
+  const mount = document.getElementById('appMount');
+  if (mount.children.length === 0) {
+    const template = document.getElementById('appTemplate');
+    mount.appendChild(template.content.cloneNode(true));
+
+    document.getElementById('todayChip').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    recalcBiometrics();
+    renderLibrary();
+  }
+}
+
+function openTosModal() {
+  document.getElementById('tosModalBg').style.display = 'flex';
+}
+
+function closeTosModal() {
+  document.getElementById('tosModalBg').style.display = 'none';
+}
+
+/* ===================== WIZARD ENGINE ===================== */
 function navToStep(stepNum){
   if(!localStorage.getItem('lionLeadCaptured')){
-    checkGateStatus();
+    evaluateGates();
     return;
   }
 
