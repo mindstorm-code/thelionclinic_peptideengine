@@ -306,7 +306,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
     <div class="step-panel active" id="step-1">
       <div class="panel">
         <div class="panel-head">
-          <div><span class="eyebrow">Biometric Calibration</span>Establish Body Profile &amp; Mass Scaler</div>
+          <div><span class="eyebrow">Biometric Calibration</span>Establish Body Profile &amp; Reference Metrics</div>
         </div>
         
         <div class="grid-3" style="margin-bottom:16px;">
@@ -354,7 +354,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
             <div id="bmiReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--gold-light);margin-top:4px;">39.6</div>
           </div>
           <div>
-            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Mass Scaling Factor</span>
+            <span style="font-size:10px;color:var(--muted);text-transform:uppercase;">Reference Mass Factor</span>
             <div id="scaleReadout" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--teal);margin-top:4px;">1.50x</div>
           </div>
           <div>
@@ -667,9 +667,60 @@ function toggleSelectPeptide(code, event){
   if(selectedStack.has(code)){
     selectedStack.delete(code);
   } else {
-    selectedStack.set(code, { tier: 'starter', vialMg: p.defaultMg, vialWater: p.defaultWater });
+    selectedStack.set(code, {
+      tier: 'starter',
+      vialMg: p.defaultMg,
+      vialWater: p.defaultWater,
+      unitsPerDay: null
+    });
   }
   renderLibrary();
+}
+
+function hasManualUnits(item){
+  const units = Number(item.unitsPerDay);
+  return Number.isFinite(units) && units > 0;
+}
+
+function getDoseValues(peptide, item){
+  const vialMg = Math.max(0.000001, Number(item.vialMg) || peptide.defaultMg);
+  const vialWater = Math.max(0.000001, Number(item.vialWater) || peptide.defaultWater);
+  const tierMass = Math.max(0, Number(peptide[item.tier]) || 0);
+  const totalMcgInVial = vialMg * 1000;
+  const totalWaterUnits = vialWater * 100;
+  const mcgPerUnit = totalMcgInVial / totalWaterUnits;
+  const tierDoseMcg = peptide.unit === 'mcg' ? tierMass : tierMass * 1000;
+  const tierUnits = tierDoseMcg / mcgPerUnit;
+  const isManual = hasManualUnits(item);
+  const units = isManual ? Number(item.unitsPerDay) : tierUnits;
+  const selectedDoseMcg = units * mcgPerUnit;
+  const mass = peptide.unit === 'mcg' ? selectedDoseMcg : selectedDoseMcg / 1000;
+
+  return {
+    mass,
+    units,
+    mcgPerUnit,
+    tierMass,
+    tierUnits,
+    isManual
+  };
+}
+
+function formatDoseNumber(value, maxDecimals = 2){
+  if(!Number.isFinite(value)) return '0';
+  return Number(value.toFixed(maxDecimals)).toString();
+}
+
+function getUnitsFieldLabel(peptide){
+  return peptide.timing === 'Weekly' ? 'Units Per Weekly Dose (U-100)' : 'Units Per Day (U-100)';
+}
+
+function getUnitsTimingLabel(peptide){
+  return peptide.timing === 'Weekly' ? 'per weekly dose' : 'per day';
+}
+
+function getDoseReadoutMarkup(peptide, dose){
+  return `${formatDoseNumber(dose.mass)} ${peptide.unit} <span style="color:var(--gold-light);">(${formatDoseNumber(dose.units)} Units ${getUnitsTimingLabel(peptide)})</span>`;
 }
 
 function renderLibrary(){
@@ -719,14 +770,12 @@ function openModal(code){
   if(!p) return;
 
   const isSelected = selectedStack.has(p.code);
-  const weight = parseFloat(document.getElementById('userWeight').value) || 180;
-  const scale = Math.max(0.5, Math.min(2.2, weight / 180));
-
-  const starterDoseMcg = p.unit==='mcg' ? (p.starter*scale) : (p.starter*scale)*1000;
-  const totalMcgInVial = p.defaultMg * 1000;
-  const totalWaterUnits = p.defaultWater * 100;
-  const mcgPerUnit = totalMcgInVial / totalWaterUnits;
-  const starterUnits = starterDoseMcg / mcgPerUnit;
+  const starterDose = getDoseValues(p, {
+    tier: 'starter',
+    vialMg: p.defaultMg,
+    vialWater: p.defaultWater,
+    unitsPerDay: null
+  });
 
   document.getElementById('modalContent').innerHTML = `
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -743,14 +792,14 @@ function openModal(code){
     <div style="margin-top:12px;font-weight:600;font-size:12px;color:var(--coral);">Cons &amp; Guardrails:</div>
     <div style="font-size:12.5px;color:var(--ivory);margin-top:4px;line-height:1.5;">${p.down}</div>
 
-    <div style="margin-top:16px;background:var(--void-deep);padding:12px;border-radius:10px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="margin-top:16px;background:var(--void-deep);padding:12px;border-radius:10px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
       <div>
         <span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;">Standard Reconstitution</span>
         <span style="color:var(--gold-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${p.defaultMg}mg Powder + ${p.defaultWater}mL Water</span>
       </div>
       <div style="text-align:right;">
-        <span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;">Starter Dose (Mass &amp; Units)</span>
-        <span style="color:var(--teal);font-family:'IBM Plex Mono',monospace;font-weight:600;">${(p.starter*scale).toFixed(1)}${p.unit} (~${starterUnits.toFixed(1)} Units)</span>
+        <span style="color:var(--muted);display:block;font-size:10px;text-transform:uppercase;">Starter Library Dose · Unscaled</span>
+        <span style="color:var(--teal);font-family:'IBM Plex Mono',monospace;font-weight:600;">${formatDoseNumber(starterDose.mass)}${p.unit} (~${formatDoseNumber(starterDose.units)} Units)</span>
       </div>
     </div>
 
@@ -778,31 +827,23 @@ function renderDoseTuning(){
     return;
   }
 
-  const weight = parseFloat(document.getElementById('userWeight').value) || 180;
-  const scale = Math.max(0.5, Math.min(2.2, weight / 180));
-
   let html = `<div style="display:flex;flex-direction:column;gap:16px;">`;
   selectedStack.forEach((val, code) => {
     const p = PEPTIDES.find(x => x.code === code);
-    const targetBase = p[val.tier];
-    const scaledMass = targetBase * scale;
-    const doseMcg = p.unit === 'mcg' ? scaledMass : scaledMass * 1000;
-    const totalMcgInVial = val.vialMg * 1000;
-    const totalWaterUnits = val.vialWater * 100;
-    const mcgPerUnit = totalMcgInVial / totalWaterUnits;
-    const calculatedUnits = doseMcg / mcgPerUnit;
+    const dose = getDoseValues(p, val);
+    const targetLabel = dose.isManual ? 'Manual Units Target' : 'Library Tier Target';
 
     html += `
       <div style="background:var(--panel-raised);border:1px solid var(--hairline);padding:18px;border-radius:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:12px;">
           <div>
             <div style="font-weight:700;font-size:16px;color:var(--gold-light);font-family:'Cinzel',serif;">${p.name} <span style="font-size:11px;color:var(--muted);">(${p.code})</span></div>
             <div style="font-size:11px;color:var(--muted);">Category: ${p.cat} · Timing: ${p.timing}</div>
           </div>
-          <div style="text-align:right;background:var(--void-deep);padding:8px 12px;border-radius:8px;border:1px solid var(--hairline);">
-            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Target Dose (Mass &amp; Units)</div>
+          <div style="text-align:right;background:var(--void-deep);padding:8px 12px;border-radius:8px;border:1px solid ${dose.isManual ? 'var(--teal)' : 'var(--hairline)'};">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">${targetLabel} (Mass &amp; Units)</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--teal);font-weight:600;">
-              ${scaledMass.toFixed(1)} ${p.unit} <span style="color:var(--gold-light);">(${calculatedUnits.toFixed(1)} Units)</span>
+              ${getDoseReadoutMarkup(p, dose)}
             </div>
           </div>
         </div>
@@ -815,10 +856,14 @@ function renderDoseTuning(){
         </div>
 
         <div style="background:var(--void-deep);padding:12px;border-radius:10px;border:1px dashed var(--hairline);">
-          <div style="font-size:11px;color:var(--gold-light);font-weight:600;margin-bottom:8px;">🧪 Edit Vial Mixing Potency:</div>
-          <div class="grid-2">
+          <div style="font-size:11px;color:var(--gold-light);font-weight:600;margin-bottom:8px;">🧪 Edit Dose &amp; Vial Mixing:</div>
+          <div class="grid-3">
             <div class="field"><label>Dry Powder (mg)</label><input type="number" step="any" value="${val.vialMg}" oninput="updateVialMixing('${code}', this.value, null)"></div>
             <div class="field"><label>BAC Water (mL)</label><input type="number" step="any" value="${val.vialWater}" oninput="updateVialMixing('${code}', null, this.value)"></div>
+            <div class="field"><label>${getUnitsFieldLabel(p)}</label><input type="number" step="any" min="0" inputmode="decimal" value="${formatDoseNumber(dose.units)}" onchange="updateUnitsPerDay('${code}', this.value)"></div>
+          </div>
+          <div style="font-size:10.5px;color:var(--muted);margin-top:9px;line-height:1.45;">
+            Units are the calculation source of truth. Entering units overrides the tier mass. Selecting another tier resets this field to that tier's exact, unscaled value.
           </div>
         </div>
       </div>
@@ -830,7 +875,9 @@ function renderDoseTuning(){
 
 function setDoseTier(code, tier){
   if(selectedStack.has(code)){
-    selectedStack.get(code).tier = tier;
+    const item = selectedStack.get(code);
+    item.tier = tier;
+    item.unitsPerDay = null;
     renderDoseTuning();
   }
 }
@@ -844,6 +891,15 @@ function updateVialMixing(code, newMg, newWater){
   }
 }
 
+function updateUnitsPerDay(code, newUnits){
+  if(selectedStack.has(code)){
+    const item = selectedStack.get(code);
+    const parsedUnits = parseFloat(newUnits);
+    item.unitsPerDay = Number.isFinite(parsedUnits) && parsedUnits > 0 ? parsedUnits : null;
+    renderDoseTuning();
+  }
+}
+
 function renderStackReview(){
   const container = document.getElementById('stackReviewList');
   const flags = document.getElementById('approvalFlags');
@@ -853,13 +909,10 @@ function renderStackReview(){
     return;
   }
 
-  const weight = parseFloat(document.getElementById('userWeight').value) || 180;
-  const scale = Math.max(0.5, Math.min(2.2, weight / 180));
-
   let table = `
     <table class="stack-table">
       <thead>
-        <tr><th>Compound</th><th>Tier</th><th>Scaled Mass</th><th>Ratio</th><th>Syringe Draw (U-100)</th><th>Timing</th></tr>
+        <tr><th>Compound</th><th>Tier / Source</th><th>Dose Mass</th><th>Ratio</th><th>Units Target</th><th>Timing</th></tr>
       </thead>
       <tbody>
   `;
@@ -869,11 +922,8 @@ function renderStackReview(){
 
   selectedStack.forEach((val, code) => {
     const p = PEPTIDES.find(x => x.code === code);
-    const baseDose = p[val.tier];
-    const scaledMass = baseDose * scale;
-    const doseMcg = p.unit === 'mcg' ? scaledMass : scaledMass * 1000;
-    const mcgPerUnit = (val.vialMg * 1000) / (val.vialWater * 100);
-    const units = doseMcg / mcgPerUnit;
+    const dose = getDoseValues(p, val);
+    const sourceLabel = dose.isManual ? `${val.tier} + manual units` : val.tier;
 
     if(p.hasCopper) hasCopper = true;
     if(p.cat.includes('Metabolic')) hasIncretin = true;
@@ -881,10 +931,10 @@ function renderStackReview(){
     table += `
       <tr>
         <td style="font-weight:600;color:var(--gold-light);">${p.name} <span style="font-size:10px;color:var(--muted);">(${p.code})</span></td>
-        <td style="text-transform:capitalize;">${val.tier}</td>
-        <td style="color:var(--teal);font-family:'IBM Plex Mono',monospace;">${scaledMass.toFixed(1)} ${p.unit}</td>
+        <td style="text-transform:capitalize;">${sourceLabel}</td>
+        <td style="color:var(--teal);font-family:'IBM Plex Mono',monospace;">${formatDoseNumber(dose.mass)} ${p.unit}</td>
         <td style="font-size:11px;color:var(--muted);">${val.vialMg}mg in ${val.vialWater}mL</td>
-        <td style="color:var(--gold-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${units.toFixed(1)} Units</td>
+        <td style="color:var(--gold-light);font-family:'IBM Plex Mono',monospace;font-weight:600;">${formatDoseNumber(dose.units)} Units ${getUnitsTimingLabel(p)}</td>
         <td>${p.timing}</td>
       </tr>
     `;
@@ -939,7 +989,7 @@ function packWeeklyPenItems(items){
         name: item.name,
         code: item.code,
         units: doseUnits,
-        message: `One scheduled draw is ${doseUnits.toFixed(1)} Units (${(doseUnits / U100_UNITS_PER_ML).toFixed(2)} mL), which cannot fit in a ${PEN_CAPACITY_ML.toFixed(2)} mL pen. Edit the vial concentration before generating pens.`
+        message: `One daily or scheduled units target is ${doseUnits.toFixed(1)} Units (${(doseUnits / U100_UNITS_PER_ML).toFixed(2)} mL), which is larger than one ${PEN_CAPACITY_ML.toFixed(2)} mL pen. Configure an approved multi-shot plan before generating pens.`
       });
       return;
     }
@@ -992,26 +1042,22 @@ function renderPenBlueprint(){
     return;
   }
 
-  const weight = parseFloat(document.getElementById('userWeight').value) || 180;
-  const scale = Math.max(0.5, Math.min(2.2, weight / 180));
   const scheduleGroups = { AM: [], PM: [], Weekly: [] };
 
   selectedStack.forEach((val, code) => {
     const p = PEPTIDES.find(x => x.code === code);
     if(!p) return;
 
-    const scaledMass = p[val.tier] * scale;
-    const doseMcg = p.unit === 'mcg' ? scaledMass : scaledMass * 1000;
-    const mcgPerUnit = (val.vialMg * 1000) / (val.vialWater * U100_UNITS_PER_ML);
-    const units = doseMcg / mcgPerUnit;
+    const dose = getDoseValues(p, val);
     const groupKey = p.timing === 'PM' ? 'PM' : (p.timing === 'Weekly' ? 'Weekly' : 'AM');
 
     scheduleGroups[groupKey].push({
       name: p.name,
       code: p.code,
-      scaledMass,
+      doseMass: dose.mass,
       unit: p.unit,
-      units,
+      units: dose.units,
+      unitsTimingLabel: getUnitsTimingLabel(p),
       dosesPerWeek: getDosesPerWeek(p),
       vialMg: val.vialMg,
       vialWater: val.vialWater,
@@ -1065,14 +1111,16 @@ function renderPenBlueprint(){
 
         pen.items.forEach(item => {
           const allocatedMl = item.allocatedUnits / U100_UNITS_PER_ML;
-          const doseLabel = item.allocatedDoses === 1 ? 'dose' : 'doses';
+          const allocationLabel = groupKey === 'Weekly'
+            ? `${item.allocatedDoses} weekly dose${item.allocatedDoses === 1 ? '' : 's'}`
+            : `${item.allocatedDoses} day${item.allocatedDoses === 1 ? '' : 's'}`;
 
           cardsHtml += `
             <li>
               <b>${item.name}</b> (${item.code}):
               reconstitute <b>${item.vialMg}mg in ${item.vialWater}mL</b>;
-              dose draw <b>${item.units.toFixed(1)} Units</b> (${item.scaledMass.toFixed(1)} ${item.unit});
-              place <b>${item.allocatedDoses} ${doseLabel}</b> in this pen =
+              target <b>${formatDoseNumber(item.units)} Units ${item.unitsTimingLabel}</b> (${formatDoseNumber(item.doseMass)} ${item.unit});
+              place <b>${allocationLabel}</b> in this pen =
               <b style="color:var(--gold-light);">${item.allocatedUnits.toFixed(1)} Units / ${allocatedMl.toFixed(2)} mL</b>.
             </li>
           `;
@@ -1096,13 +1144,14 @@ function renderPenBlueprint(){
   container.innerHTML = `
     <div style="background:rgba(16,185,129,.12);border:1px solid var(--teal);padding:14px;border-radius:12px;color:#A7F3D0;font-size:12px;margin-bottom:16px;">
       ✓ <b>${totalPens} pen${totalPens === 1 ? '' : 's'} generated.</b>
-      Capacity is fixed at <b>${PEN_CAPACITY_ML.toFixed(2)} mL / ${PEN_CAPACITY_UNITS} Units per pen</b>. AM and PM use seven scheduled doses; Weekly uses one.
+      Capacity is fixed at <b>${PEN_CAPACITY_ML.toFixed(2)} mL / ${PEN_CAPACITY_UNITS} Units per pen</b>. AM and PM allocate seven daily totals; Weekly uses one scheduled dose.
       Timing groups and known copper/metabolic conflicts remain separated automatically.
     </div>
     ${errorsHtml}
     ${cardsHtml}
   `;
 }
+
 </script>
 </body>
 </html>
