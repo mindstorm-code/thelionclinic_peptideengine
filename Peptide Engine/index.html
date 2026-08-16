@@ -904,7 +904,7 @@ function approveAndProceed(){
   navToStep(5);
 }
 
-const PEN_CAPACITY_ML = 3;
+const PEN_CAPACITY_ML = 2.5;
 const U100_UNITS_PER_ML = 100;
 const PEN_CAPACITY_UNITS = PEN_CAPACITY_ML * U100_UNITS_PER_ML;
 const WEEK_LENGTH_DAYS = 7;
@@ -939,7 +939,7 @@ function packWeeklyPenItems(items){
         name: item.name,
         code: item.code,
         units: doseUnits,
-        message: `One scheduled draw is ${doseUnits.toFixed(1)} Units (${(doseUnits / U100_UNITS_PER_ML).toFixed(2)} mL), which cannot fit in a 3.00 mL pen. Edit the vial concentration before generating pens.`
+        message: `One scheduled draw is ${doseUnits.toFixed(1)} Units (${(doseUnits / U100_UNITS_PER_ML).toFixed(2)} mL), which cannot fit in a ${PEN_CAPACITY_ML.toFixed(2)} mL pen. Edit the vial concentration before generating pens.`
       });
       return;
     }
@@ -1057,9 +1057,9 @@ function renderPenBlueprint(){
           <div class="pen-card" style="background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;margin-bottom:16px;">
             <div class="pen-card-title" style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px;">
               <span style="font-family:'Cinzel',serif;color:var(--gold-light);font-weight:700;">Pen ${penNum} — ${groupKey} Weekly Supply${compatibilityLabel}</span>
-              <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);white-space:nowrap;">${totalMl.toFixed(2)} mL / 3.00 mL</span>
+              <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);white-space:nowrap;">${totalMl.toFixed(2)} mL / ${PEN_CAPACITY_ML.toFixed(2)} mL</span>
             </div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Seven-day cartridge allocation. A new pen starts before any item would push this pen over 3.00 mL.</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Seven-day cartridge allocation. A new pen starts before any item would push this pen over ${PEN_CAPACITY_ML.toFixed(2)} mL.</div>
             <ul style="margin:0 0 12px;padding-left:18px;font-size:12.5px;color:var(--ivory);line-height:1.65;">
         `;
 
@@ -1096,7 +1096,7 @@ function renderPenBlueprint(){
   container.innerHTML = `
     <div style="background:rgba(16,185,129,.12);border:1px solid var(--teal);padding:14px;border-radius:12px;color:#A7F3D0;font-size:12px;margin-bottom:16px;">
       ✓ <b>${totalPens} pen${totalPens === 1 ? '' : 's'} generated.</b>
-      Capacity is fixed at <b>3.00 mL / 300 Units per pen</b>. AM and PM use seven scheduled doses; Weekly uses one.
+      Capacity is fixed at <b>${PEN_CAPACITY_ML.toFixed(2)} mL / ${PEN_CAPACITY_UNITS} Units per pen</b>. AM and PM use seven scheduled doses; Weekly uses one.
       Timing groups and known copper/metabolic conflicts remain separated automatically.
     </div>
     ${errorsHtml}
