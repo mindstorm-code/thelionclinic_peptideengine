@@ -184,7 +184,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
 
 /* Print Styling Rules for Exported PDFs */
 @media print {
-  .header, .wiz-bar, .btn-row, .persistent-footer, .modal-bg { display: none !important; }
+  .header, .wiz-bar, .btn-row, .persistent-footer, .modal-bg, .pen-plan-controls { display: none !important; }
   .app { max-width: 100%; padding: 0; }
   .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
   .print-footer { display: block !important; margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; font-size: 10pt; text-align: center; }
@@ -484,8 +484,25 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
     <div class="step-panel" id="step-5">
       <div class="panel">
         <div class="panel-head">
-          <div><span class="eyebrow">Auto-Pen Cartridge Blueprint</span>Final Reconstitution &amp; Injection Blueprints</div>
+          <div><span class="eyebrow">Auto-Pen Cartridge Blueprint</span>Balanced Daily Pen Draws &amp; Weekly Fill Guide</div>
         </div>
+
+        <div class="pen-plan-controls" style="background:var(--void-deep);border:1px solid var(--hairline);border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div class="grid-2">
+            <div class="field">
+              <label>Daily Pen Draws / Shots</label>
+              <input id="dailyShotTarget" type="number" min="1" max="8" step="1" value="3" inputmode="numeric" oninput="renderPenBlueprint()">
+            </div>
+            <div class="field">
+              <label>Preferred Maximum Per Pen Per Day (U-100)</label>
+              <input id="preferredDailyUnits" type="number" min="1" max="35.7" step="0.1" value="30" inputmode="decimal" oninput="renderPenBlueprint()">
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:var(--muted);line-height:1.45;margin-top:9px;">
+            The allocator preserves AM/PM timing, separates the existing copper/metabolic conflict, and splits flexible volume across pens. The preferred maximum is a planning target; the hard seven-day cartridge limit is 35.7 Units per day / 250 Units per pen.
+          </div>
+        </div>
+
         <div id="penBlueprintContainer"></div>
 
         <div class="btn-row">
@@ -961,7 +978,7 @@ function renderStackReview(){
   container.innerHTML = table;
 
   if(hasCopper && hasIncretin){
-    flags.innerHTML = `<div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;">⚠️ <b>Auto-Separation Conflict Note:</b> Copper peptides (GHK-Cu) and metabolic/incretin variants will be automatically separated into independent pen cartridges to prevent liquid peptide degradation.</div>`;
+    flags.innerHTML = `<div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;">⚠️ <b>Auto-Separation Conflict Note:</b> Copper peptides (GHK-Cu) and metabolic/incretin variants stay in separate cartridge lanes. Other flexible compounds may be divided between those lanes to balance the daily pen draws.</div>`;
   } else {
     flags.innerHTML = `<div style="background:rgba(16,185,129,.15);border:1px solid var(--teal);padding:12px;border-radius:10px;color:#A7F3D0;font-size:12px;">✓ <b>Stack Approved:</b> All selected compounds cleared for auto-pen cartridge placement.</div>`;
   }
@@ -976,195 +993,419 @@ const U100_UNITS_PER_ML = 100;
 const PEN_CAPACITY_UNITS = PEN_CAPACITY_ML * U100_UNITS_PER_ML;
 const WEEK_LENGTH_DAYS = 7;
 const PEN_CAPACITY_EPSILON = 0.0001;
+const DEFAULT_DAILY_SHOT_TARGET = 3;
+const DEFAULT_PREFERRED_DAILY_UNITS = 30;
+const HARD_DAILY_UNITS_PER_PEN = PEN_CAPACITY_UNITS / WEEK_LENGTH_DAYS;
 
 function getDosesPerWeek(peptide){
   return peptide.timing === 'Weekly' ? 1 : WEEK_LENGTH_DAYS;
 }
 
-function packWeeklyPenItems(items){
-  const pens = [];
-  const errors = [];
-  let currentPen = { items: [], totalUnits: 0 };
+function getPlannerNumber(inputId, fallback, min, max){
+  const input = document.getElementById(inputId);
+  const parsed = input ? Number(input.value) : fallback;
+  if(!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
 
-  const closeCurrentPen = () => {
-    if(!currentPen.items.length) return;
-    pens.push(currentPen);
-    currentPen = { items: [], totalUnits: 0 };
+function getRequestedDailyShotCount(){
+  return Math.round(getPlannerNumber('dailyShotTarget', DEFAULT_DAILY_SHOT_TARGET, 1, 8));
+}
+
+function getPreferredDailyUnits(){
+  return getPlannerNumber('preferredDailyUnits', DEFAULT_PREFERRED_DAILY_UNITS, 1, HARD_DAILY_UNITS_PER_PEN);
+}
+
+function hasCopperMetabolicConflict(items){
+  return items.some(item => item.hasCopper) && items.some(item => item.isMetabolic);
+}
+
+function getMinimumPensForItems(items){
+  const totalUnits = items.reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const capacityMinimum = Math.max(1, Math.ceil((totalUnits - PEN_CAPACITY_EPSILON) / PEN_CAPACITY_UNITS));
+
+  if(!hasCopperMetabolicConflict(items)){
+    return capacityMinimum;
+  }
+
+  const copperUnits = items.filter(item => item.hasCopper).reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const metabolicUnits = items.filter(item => item.isMetabolic).reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const copperMinimum = Math.max(1, Math.ceil((copperUnits - PEN_CAPACITY_EPSILON) / PEN_CAPACITY_UNITS));
+  const metabolicMinimum = Math.max(1, Math.ceil((metabolicUnits - PEN_CAPACITY_EPSILON) / PEN_CAPACITY_UNITS));
+
+  return Math.max(capacityMinimum, copperMinimum + metabolicMinimum);
+}
+
+function allocateDailyPenCounts(scheduleGroups, requestedCount){
+  const plans = Object.entries(scheduleGroups)
+    .filter(([, items]) => items.length)
+    .map(([timing, items]) => ({
+      timing,
+      items,
+      weeklyUnits: items.reduce((sum, item) => sum + item.weeklyUnits, 0),
+      minimumPens: getMinimumPensForItems(items),
+      penCount: getMinimumPensForItems(items)
+    }));
+
+  const minimumTotal = plans.reduce((sum, plan) => sum + plan.minimumPens, 0);
+  const plannedTotal = Math.max(requestedCount, minimumTotal);
+  let allocated = plans.reduce((sum, plan) => sum + plan.penCount, 0);
+
+  while(allocated < plannedTotal && plans.length){
+    plans.sort((a, b) => (b.weeklyUnits / b.penCount) - (a.weeklyUnits / a.penCount));
+    plans[0].penCount += 1;
+    allocated += 1;
+  }
+
+  plans.sort((a, b) => {
+    const order = { AM: 0, PM: 1 };
+    return (order[a.timing] ?? 9) - (order[b.timing] ?? 9);
+  });
+
+  return {
+    plans,
+    minimumTotal,
+    requestedCount,
+    actualCount: allocated,
+    exceedsRequested: minimumTotal > requestedCount
   };
+}
 
-  items.forEach(item => {
-    const doseUnits = Number(item.units);
-    const requestedDoses = Number(item.dosesPerWeek);
+function createPenSlots(penCount, items, timing){
+  const conflict = hasCopperMetabolicConflict(items);
+  const pens = [];
 
-    if(!Number.isFinite(doseUnits) || doseUnits <= 0 || !Number.isFinite(requestedDoses) || requestedDoses <= 0){
-      return;
-    }
-
-    if(doseUnits > PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON){
-      closeCurrentPen();
-      errors.push({
-        name: item.name,
-        code: item.code,
-        units: doseUnits,
-        message: `One daily or scheduled units target is ${doseUnits.toFixed(1)} Units (${(doseUnits / U100_UNITS_PER_ML).toFixed(2)} mL), which is larger than one ${PEN_CAPACITY_ML.toFixed(2)} mL pen. Configure an approved multi-shot plan before generating pens.`
+  if(!conflict){
+    for(let i = 0; i < penCount; i++){
+      pens.push({
+        timing,
+        lane: 'standard',
+        items: [],
+        totalUnits: 0,
+        hasCopper: false,
+        hasMetabolic: false
       });
-      return;
     }
+    return pens;
+  }
 
-    const weeklyUnits = doseUnits * requestedDoses;
+  const copperUnits = items.filter(item => item.hasCopper).reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const metabolicUnits = items.filter(item => item.isMetabolic).reduce((sum, item) => sum + item.weeklyUnits, 0);
+  let copperCount = Math.max(1, Math.ceil((copperUnits - PEN_CAPACITY_EPSILON) / PEN_CAPACITY_UNITS));
+  let metabolicCount = Math.max(1, Math.ceil((metabolicUnits - PEN_CAPACITY_EPSILON) / PEN_CAPACITY_UNITS));
 
-    if(weeklyUnits <= PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON){
-      if(currentPen.items.length && currentPen.totalUnits + weeklyUnits > PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON){
-        closeCurrentPen();
+  while(copperCount + metabolicCount < penCount){
+    if((copperUnits / copperCount) >= (metabolicUnits / metabolicCount)){
+      copperCount += 1;
+    } else {
+      metabolicCount += 1;
+    }
+  }
+
+  for(let i = 0; i < copperCount; i++){
+    pens.push({
+      timing,
+      lane: 'copper',
+      items: [],
+      totalUnits: 0,
+      hasCopper: false,
+      hasMetabolic: false
+    });
+  }
+
+  for(let i = 0; i < metabolicCount; i++){
+    pens.push({
+      timing,
+      lane: 'metabolic',
+      items: [],
+      totalUnits: 0,
+      hasCopper: false,
+      hasMetabolic: false
+    });
+  }
+
+  return pens;
+}
+
+function itemCanUsePen(item, pen){
+  if(item.hasCopper && pen.lane === 'metabolic') return false;
+  if(item.isMetabolic && pen.lane === 'copper') return false;
+  return true;
+}
+
+function addAllocatedPortion(pen, item, allocatedUnits){
+  let portion = pen.items.find(existing => existing.code === item.code);
+
+  if(!portion){
+    portion = { ...item, allocatedUnits: 0 };
+    pen.items.push(portion);
+  }
+
+  portion.allocatedUnits += allocatedUnits;
+  pen.totalUnits += allocatedUnits;
+  if(item.hasCopper) pen.hasCopper = true;
+  if(item.isMetabolic) pen.hasMetabolic = true;
+}
+
+function allocateBalancedPens(items, penCount, timing){
+  const errors = [];
+  const pens = createPenSlots(penCount, items, timing);
+  const totalUnits = items.reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const targetUnitsPerPen = totalUnits / penCount;
+
+  const orderedItems = items
+    .map((item, sourceOrder) => ({ ...item, sourceOrder }))
+    .sort((a, b) => {
+      const rank = item => item.hasCopper ? 0 : (item.isMetabolic ? 1 : 2);
+      return rank(a) - rank(b) || a.sourceOrder - b.sourceOrder;
+    });
+
+  orderedItems.forEach(item => {
+    let remainingUnits = item.weeklyUnits;
+    let guard = 0;
+
+    while(remainingUnits > PEN_CAPACITY_EPSILON && guard < 1000){
+      guard += 1;
+      const eligiblePens = pens
+        .filter(pen => itemCanUsePen(item, pen) && pen.totalUnits < PEN_CAPACITY_UNITS - PEN_CAPACITY_EPSILON)
+        .sort((a, b) => a.totalUnits - b.totalUnits);
+
+      if(!eligiblePens.length){
+        errors.push({
+          code: item.code,
+          name: item.name,
+          message: `No compatible pen has enough room for ${remainingUnits.toFixed(1)} remaining Units.`
+        });
+        break;
       }
 
-      currentPen.items.push({
-        ...item,
-        allocatedDoses: requestedDoses,
-        allocatedUnits: weeklyUnits
-      });
-      currentPen.totalUnits += weeklyUnits;
-      return;
-    }
+      const pen = eligiblePens[0];
+      const capacitySpace = PEN_CAPACITY_UNITS - pen.totalUnits;
+      const targetSpace = Math.max(0, targetUnitsPerPen - pen.totalUnits);
+      const desiredSpace = targetSpace > PEN_CAPACITY_EPSILON ? targetSpace : capacitySpace;
+      const allocatedUnits = Math.min(remainingUnits, capacitySpace, desiredSpace);
 
-    closeCurrentPen();
-    let remainingDoses = requestedDoses;
-    const maxWholeDosesPerPen = Math.max(1, Math.floor((PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON) / doseUnits));
+      if(allocatedUnits <= PEN_CAPACITY_EPSILON){
+        errors.push({
+          code: item.code,
+          name: item.name,
+          message: 'The allocator could not make progress while splitting this compound.'
+        });
+        break;
+      }
 
-    while(remainingDoses > 0){
-      const allocatedDoses = Math.min(remainingDoses, maxWholeDosesPerPen);
-      const allocatedUnits = doseUnits * allocatedDoses;
-
-      pens.push({
-        items: [{
-          ...item,
-          allocatedDoses,
-          allocatedUnits
-        }],
-        totalUnits: allocatedUnits
-      });
-
-      remainingDoses -= allocatedDoses;
+      addAllocatedPortion(pen, item, allocatedUnits);
+      remainingUnits -= allocatedUnits;
     }
   });
 
-  closeCurrentPen();
-  return { pens, errors };
+  pens.forEach(pen => {
+    if(pen.totalUnits > PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON){
+      errors.push({
+        name: `${timing} pen`,
+        code: 'CAPACITY',
+        message: `Pen total ${pen.totalUnits.toFixed(1)} exceeds the ${PEN_CAPACITY_UNITS} Unit hard limit.`
+      });
+    }
+
+    if(pen.hasCopper && pen.hasMetabolic){
+      errors.push({
+        name: `${timing} pen`,
+        code: 'COMPATIBILITY',
+        message: 'Copper and metabolic compounds were assigned to the same pen.'
+      });
+    }
+  });
+
+  return { pens, errors, totalUnits, targetUnitsPerPen };
+}
+
+function getLaneLabel(pen){
+  if(pen.lane === 'copper') return ' · Copper lane';
+  if(pen.lane === 'metabolic') return ' · Metabolic lane';
+  return '';
+}
+
+function getAllocationDrawUnits(item, timing){
+  return timing === 'Weekly' ? item.allocatedUnits : item.allocatedUnits / WEEK_LENGTH_DAYS;
+}
+
+function renderPenCard(pen, penNum, preferredDailyUnits){
+  const isWeekly = pen.timing === 'Weekly';
+  const totalMl = pen.totalUnits / U100_UNITS_PER_ML;
+  const remainingMl = Math.max(0, PEN_CAPACITY_ML - totalMl);
+  const drawUnits = isWeekly ? pen.totalUnits : pen.totalUnits / WEEK_LENGTH_DAYS;
+  const abovePreferred = !isWeekly && drawUnits > preferredDailyUnits + PEN_CAPACITY_EPSILON;
+  const drawColor = abovePreferred ? 'var(--gold)' : 'var(--teal)';
+  const drawWhen = isWeekly ? 'on the scheduled day' : `each day (${pen.timing})`;
+  const supplyLabel = isWeekly ? 'Scheduled Supply' : 'Seven-Day Supply';
+
+  let itemRows = '';
+
+  pen.items.forEach(item => {
+    const portionDrawUnits = getAllocationDrawUnits(item, pen.timing);
+    const portionFraction = item.units > 0 ? portionDrawUnits / item.units : 0;
+    const portionMass = item.doseMass * portionFraction;
+    const isSplit = item.allocatedUnits < item.weeklyUnits - PEN_CAPACITY_EPSILON;
+    const splitLabel = isSplit ? 'split share' : 'full scheduled share';
+
+    itemRows += `
+      <li>
+        <b>${item.name}</b> (${item.code}):
+        reconstitute <b>${item.vialMg}mg in ${item.vialWater}mL</b>;
+        total target <b>${formatDoseNumber(item.units)} Units ${item.unitsTimingLabel}</b> (${formatDoseNumber(item.doseMass)} ${item.unit});
+        place <b>${formatDoseNumber(portionDrawUnits)} Units ${isWeekly ? 'for this scheduled dose' : 'per day'} in this pen</b>
+        (${formatDoseNumber(portionMass)} ${item.unit}, ${splitLabel}) =
+        <b style="color:var(--gold-light);">${item.allocatedUnits.toFixed(1)} Units / ${(item.allocatedUnits / U100_UNITS_PER_ML).toFixed(2)} mL loaded</b>.
+      </li>
+    `;
+  });
+
+  return `
+    <div class="pen-card" style="background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;margin-bottom:16px;break-inside:avoid;page-break-inside:avoid;">
+      <div class="pen-card-title" style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px;">
+        <span style="font-family:'Cinzel',serif;color:var(--gold-light);font-weight:700;">Pen ${penNum} — ${pen.timing} ${supplyLabel}${getLaneLabel(pen)}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);white-space:nowrap;">${totalMl.toFixed(2)} mL / ${PEN_CAPACITY_ML.toFixed(2)} mL</span>
+      </div>
+
+      <div style="background:var(--void-deep);border:1px solid ${drawColor};padding:12px;border-radius:10px;margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${isWeekly ? 'Scheduled Pen Draw' : 'Daily Pen Draw'}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;color:${drawColor};font-weight:700;margin-top:4px;">
+          Draw ${formatDoseNumber(drawUnits)} Units from this pen ${drawWhen}
+        </div>
+        ${abovePreferred ? `<div style="font-size:10.5px;color:var(--gold-light);margin-top:5px;">Above the ${formatDoseNumber(preferredDailyUnits)}-Unit preferred planning target, but below the ${formatDoseNumber(HARD_DAILY_UNITS_PER_PEN)}-Unit hard seven-day capacity.</div>` : ''}
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+        Split-aware seven-day allocation. Every loaded portion is included in the daily draw shown above.
+      </div>
+
+      <ul style="margin:0 0 12px;padding-left:18px;font-size:12.5px;color:var(--ivory);line-height:1.65;">
+        ${itemRows}
+      </ul>
+
+      <div style="background:var(--void-deep);padding:10px 12px;border-radius:8px;font-size:11.5px;color:var(--gold-light);">
+        🎯 <b>Pen fill:</b> ${pen.totalUnits.toFixed(1)} of ${PEN_CAPACITY_UNITS} Units (${totalMl.toFixed(2)} of ${PEN_CAPACITY_ML.toFixed(2)} mL).
+        Unused capacity: ${remainingMl.toFixed(2)} mL. <b>This pen is not overfilled.</b>
+      </div>
+    </div>
+  `;
 }
 
 function renderPenBlueprint(){
   const container = document.getElementById('penBlueprintContainer');
+  if(!container) return;
+
   if(!selectedStack.size){
-    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:30px;">No stack available to fill.</div>`;
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;">No stack available to fill.</div>';
     return;
   }
 
+  const requestedDailyShots = getRequestedDailyShotCount();
+  const preferredDailyUnits = getPreferredDailyUnits();
   const scheduleGroups = { AM: [], PM: [], Weekly: [] };
 
   selectedStack.forEach((val, code) => {
-    const p = PEPTIDES.find(x => x.code === code);
-    if(!p) return;
+    const peptide = PEPTIDES.find(entry => entry.code === code);
+    if(!peptide) return;
 
-    const dose = getDoseValues(p, val);
-    const groupKey = p.timing === 'PM' ? 'PM' : (p.timing === 'Weekly' ? 'Weekly' : 'AM');
+    const dose = getDoseValues(peptide, val);
+    const timing = peptide.timing === 'PM' ? 'PM' : (peptide.timing === 'Weekly' ? 'Weekly' : 'AM');
+    const dosesPerWeek = getDosesPerWeek(peptide);
+    const weeklyUnits = dose.units * dosesPerWeek;
 
-    scheduleGroups[groupKey].push({
-      name: p.name,
-      code: p.code,
+    if(!Number.isFinite(weeklyUnits) || weeklyUnits <= 0) return;
+
+    scheduleGroups[timing].push({
+      name: peptide.name,
+      code: peptide.code,
       doseMass: dose.mass,
-      unit: p.unit,
+      unit: peptide.unit,
       units: dose.units,
-      unitsTimingLabel: getUnitsTimingLabel(p),
-      dosesPerWeek: getDosesPerWeek(p),
+      unitsTimingLabel: getUnitsTimingLabel(peptide),
+      dosesPerWeek,
+      weeklyUnits,
       vialMg: val.vialMg,
       vialWater: val.vialWater,
-      hasCopper: Boolean(p.hasCopper),
-      isMetabolic: p.cat.includes('Metabolic')
+      hasCopper: Boolean(peptide.hasCopper),
+      isMetabolic: peptide.cat.includes('Metabolic')
     });
   });
+
+  const dailyAllocation = allocateDailyPenCounts(
+    { AM: scheduleGroups.AM, PM: scheduleGroups.PM },
+    requestedDailyShots
+  );
+
+  const renderedGroups = [];
+  const allocationErrors = [];
+
+  dailyAllocation.plans.forEach(plan => {
+    const balanced = allocateBalancedPens(plan.items, plan.penCount, plan.timing);
+    renderedGroups.push({ timing: plan.timing, ...balanced });
+    allocationErrors.push(...balanced.errors);
+  });
+
+  if(scheduleGroups.Weekly.length){
+    const weeklyPenCount = getMinimumPensForItems(scheduleGroups.Weekly);
+    const weeklyBalanced = allocateBalancedPens(scheduleGroups.Weekly, weeklyPenCount, 'Weekly');
+    renderedGroups.push({ timing: 'Weekly', ...weeklyBalanced });
+    allocationErrors.push(...weeklyBalanced.errors);
+  }
+
+  const dailyPens = renderedGroups
+    .filter(group => group.timing !== 'Weekly')
+    .flatMap(group => group.pens);
+  const weeklyPens = renderedGroups
+    .filter(group => group.timing === 'Weekly')
+    .flatMap(group => group.pens);
+  const allPens = [...dailyPens, ...weeklyPens];
+
+  let noticesHtml = '';
+
+  if(dailyAllocation.exceedsRequested){
+    noticesHtml += `
+      <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;margin-bottom:12px;">
+        ⚠️ <b>Requested ${requestedDailyShots} daily pen draws, but the minimum is ${dailyAllocation.minimumTotal}.</b>
+        Capacity or the existing copper/metabolic separation requires the additional draw. No timing or compatibility rule was silently overridden.
+      </div>
+    `;
+  }
+
+  allocationErrors.forEach(error => {
+    noticesHtml += `
+      <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;margin-bottom:12px;">
+        ⚠️ <b>${error.name} (${error.code}):</b> ${error.message}
+      </div>
+    `;
+  });
+
+  const abovePreferredPens = dailyPens.filter(pen => (pen.totalUnits / WEEK_LENGTH_DAYS) > preferredDailyUnits + PEN_CAPACITY_EPSILON);
+  const amCount = dailyPens.filter(pen => pen.timing === 'AM').length;
+  const pmCount = dailyPens.filter(pen => pen.timing === 'PM').length;
+  const timingSummary = [
+    amCount ? `${amCount} AM` : '',
+    pmCount ? `${pmCount} PM` : ''
+  ].filter(Boolean).join(' + ');
 
   let cardsHtml = '';
-  let errorsHtml = '';
-  let penNum = 1;
-
-  Object.entries(scheduleGroups).forEach(([groupKey, items]) => {
-    if(!items.length) return;
-
-    const mustSeparateCopper = items.some(item => item.hasCopper) && items.some(item => item.isMetabolic);
-    const compatibilityGroups = mustSeparateCopper
-      ? [
-          { label: 'Copper-separated', items: items.filter(item => item.hasCopper) },
-          { label: 'Standard', items: items.filter(item => !item.hasCopper) }
-        ]
-      : [{ label: 'Standard', items }];
-
-    compatibilityGroups.forEach(compatibilityGroup => {
-      if(!compatibilityGroup.items.length) return;
-
-      const packed = packWeeklyPenItems(compatibilityGroup.items);
-
-      packed.errors.forEach(error => {
-        errorsHtml += `
-          <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;margin-bottom:12px;">
-            ⚠️ <b>${error.name} (${error.code}) cannot be assigned:</b> ${error.message}
-          </div>
-        `;
-      });
-
-      packed.pens.forEach(pen => {
-        const totalMl = pen.totalUnits / U100_UNITS_PER_ML;
-        const remainingMl = Math.max(0, PEN_CAPACITY_ML - totalMl);
-        const compatibilityLabel = compatibilityGroup.label === 'Copper-separated' ? ' · Copper-separated' : '';
-
-        cardsHtml += `
-          <div class="pen-card" style="background:var(--panel-raised);border:1px solid var(--hairline);border-radius:14px;padding:18px;margin-bottom:16px;">
-            <div class="pen-card-title" style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px;">
-              <span style="font-family:'Cinzel',serif;color:var(--gold-light);font-weight:700;">Pen ${penNum} — ${groupKey} Weekly Supply${compatibilityLabel}</span>
-              <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);white-space:nowrap;">${totalMl.toFixed(2)} mL / ${PEN_CAPACITY_ML.toFixed(2)} mL</span>
-            </div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Seven-day cartridge allocation. A new pen starts before any item would push this pen over ${PEN_CAPACITY_ML.toFixed(2)} mL.</div>
-            <ul style="margin:0 0 12px;padding-left:18px;font-size:12.5px;color:var(--ivory);line-height:1.65;">
-        `;
-
-        pen.items.forEach(item => {
-          const allocatedMl = item.allocatedUnits / U100_UNITS_PER_ML;
-          const allocationLabel = groupKey === 'Weekly'
-            ? `${item.allocatedDoses} weekly dose${item.allocatedDoses === 1 ? '' : 's'}`
-            : `${item.allocatedDoses} day${item.allocatedDoses === 1 ? '' : 's'}`;
-
-          cardsHtml += `
-            <li>
-              <b>${item.name}</b> (${item.code}):
-              reconstitute <b>${item.vialMg}mg in ${item.vialWater}mL</b>;
-              target <b>${formatDoseNumber(item.units)} Units ${item.unitsTimingLabel}</b> (${formatDoseNumber(item.doseMass)} ${item.unit});
-              place <b>${allocationLabel}</b> in this pen =
-              <b style="color:var(--gold-light);">${item.allocatedUnits.toFixed(1)} Units / ${allocatedMl.toFixed(2)} mL</b>.
-            </li>
-          `;
-        });
-
-        cardsHtml += `
-            </ul>
-            <div style="background:var(--void-deep);padding:10px 12px;border-radius:8px;font-size:11.5px;color:var(--gold-light);">
-              🎯 <b>Pen fill:</b> ${pen.totalUnits.toFixed(1)} of ${PEN_CAPACITY_UNITS} Units (${totalMl.toFixed(2)} of ${PEN_CAPACITY_ML.toFixed(2)} mL).
-              Unused capacity: ${remainingMl.toFixed(2)} mL. <b>This pen is not overfilled.</b>
-            </div>
-          </div>
-        `;
-
-        penNum++;
-      });
-    });
+  allPens.forEach((pen, index) => {
+    cardsHtml += renderPenCard(pen, index + 1, preferredDailyUnits);
   });
 
-  const totalPens = penNum - 1;
   container.innerHTML = `
     <div style="background:rgba(16,185,129,.12);border:1px solid var(--teal);padding:14px;border-radius:12px;color:#A7F3D0;font-size:12px;margin-bottom:16px;">
-      ✓ <b>${totalPens} pen${totalPens === 1 ? '' : 's'} generated.</b>
-      Capacity is fixed at <b>${PEN_CAPACITY_ML.toFixed(2)} mL / ${PEN_CAPACITY_UNITS} Units per pen</b>. AM and PM allocate seven daily totals; Weekly uses one scheduled dose.
-      Timing groups and known copper/metabolic conflicts remain separated automatically.
+      ✓ <b>${dailyPens.length} daily pen draws generated (${timingSummary || 'daily'}).</b>
+      Requested: ${requestedDailyShots}. Flexible volume is split and balanced inside each timing group.
+      Every pen remains at or below <b>${PEN_CAPACITY_ML.toFixed(2)} mL / ${PEN_CAPACITY_UNITS} Units</b>.
+      ${weeklyPens.length ? ` An additional ${weeklyPens.length} weekly-only pen${weeklyPens.length === 1 ? '' : 's'} is shown separately.` : ''}
     </div>
-    ${errorsHtml}
+    ${abovePreferredPens.length ? `
+      <div style="background:rgba(212,175,55,.12);border:1px solid var(--gold);padding:12px;border-radius:10px;color:var(--gold-light);font-size:12px;margin-bottom:12px;">
+        ⚠️ ${abovePreferredPens.length} pen${abovePreferredPens.length === 1 ? '' : 's'} exceed the preferred ${formatDoseNumber(preferredDailyUnits)} Units/day planning target, but none exceed the hard ${formatDoseNumber(HARD_DAILY_UNITS_PER_PEN)} Units/day seven-day capacity.
+      </div>
+    ` : ''}
+    ${noticesHtml}
     ${cardsHtml}
   `;
 }
