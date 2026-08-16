@@ -871,12 +871,6 @@ function renderDoseTuning(){
           </select>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
-          <button class="btn ghost" style="${val.tier==='micro'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','micro')">Micro<br><span style="font-size:10px;">${p.micro}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='starter'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','starter')">Starter<br><span style="font-size:10px;">${p.starter}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='maint'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','maint')">Maintenance<br><span style="font-size:10px;">${p.maint}${p.unit}</span></button>
-          <button class="btn ghost" style="${val.tier==='super'?'border-color:var(--gold);color:var(--gold-light);background:rgba(212,175,55,.15);':''}" onclick="setDoseTier('${code}','super')">Superdose Max<br><span style="font-size:10px;">${p.super}${p.unit}</span></button>
-        </div>
 
         <div style="background:var(--void-deep);padding:12px;border-radius:10px;border:1px dashed var(--hairline);">
           <div style="font-size:11px;color:var(--gold-light);font-weight:600;margin-bottom:8px;">🧪 Edit Dose &amp; Vial Mixing:</div>
