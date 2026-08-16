@@ -386,6 +386,8 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
           You must consume <b>180g of complete protein/day</b> and complete <b>3–4 resistance sessions/week</b> to protect muscle mass on incretins. Always use BAC water, swirl gently (never shake), and refrigerate reconstituted vials.
         </div>
 
+        <div id="selectionSummary" style="background:var(--void-deep);border:1px solid var(--hairline);border-radius:12px;padding:12px 14px;margin-bottom:16px;"></div>
+
         <div class="dashboard-grid">
           <div>
             <div class="search-bar-box">
@@ -507,7 +509,7 @@ html,body{margin:0;padding:0;background:var(--void-deep);color:var(--ivory);font
 
         <div class="btn-row">
           <button class="btn ghost" onclick="navToStep(4)">← Edit Stack</button>
-          <button class="btn" onclick="window.print()">🖨️ Print Pen Guide</button>
+          <button class="btn" id="printPenGuideButton" onclick="printPenGuide()" disabled style="opacity:.45;cursor:not-allowed;">🖨️ Print Pen Guide</button>
         </div>
       </div>
     </div>
@@ -563,6 +565,7 @@ let currentStep = 1;
 let selectedStack = new Map();
 let activeGoalFilter = 'all';
 let searchQuery = '';
+let lastPenPlanValid = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   evaluateGates();
@@ -700,6 +703,7 @@ function toggleSelectPeptide(code, event){
       unitsPerDay: null
     });
   }
+  lastPenPlanValid = false;
   renderLibrary();
 }
 
@@ -753,7 +757,70 @@ function getDoseReadoutMarkup(peptide, dose){
   return `${formatDoseNumber(dose.mass)} ${peptide.unit} <span style="color:var(--gold-light);">(${formatDoseNumber(dose.units)} Units ${getUnitsTimingLabel(peptide)})</span>`;
 }
 
+
+function renderSelectionSummary(){
+  const summary = document.getElementById('selectionSummary');
+  if(!summary) return;
+
+  const selectedCodes = Array.from(selectedStack.keys());
+  const selectedNames = selectedCodes
+    .map(code => PEPTIDES.find(peptide => peptide.code === code)?.name)
+    .filter(Boolean);
+  const previewNames = selectedNames.slice(0, 6).join(', ');
+  const remainingCount = Math.max(0, selectedNames.length - 6);
+
+  summary.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;color:var(--gold-light);font-weight:700;">
+          Selected Stack: ${selectedNames.length} compound${selectedNames.length === 1 ? '' : 's'}
+        </div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4;">
+          ${selectedNames.length ? previewNames + (remainingCount ? ` + ${remainingCount} more` : '') : 'Nothing selected yet.'}
+        </div>
+      </div>
+      ${selectedNames.length ? '<button class="btn ghost" style="padding:8px 12px;font-size:10px;" onclick="clearSelectedStack()">Clear Stack</button>' : ''}
+    </div>
+  `;
+}
+
+function clearSelectedStack(){
+  if(selectedStack.size && !window.confirm('Clear every compound and all edited units from this stack?')) return false;
+  selectedStack.clear();
+  lastPenPlanValid = false;
+  renderLibrary();
+
+  if(document.getElementById('doseTuningContainer')){
+    renderDoseTuning();
+  }
+
+  setPrintPenGuideEnabled(false);
+  return true;
+}
+
+function setPrintPenGuideEnabled(enabled){
+  const button = document.getElementById('printPenGuideButton');
+  lastPenPlanValid = Boolean(enabled);
+  if(!button) return;
+
+  button.disabled = !enabled;
+  button.style.opacity = enabled ? '1' : '.45';
+  button.style.cursor = enabled ? 'pointer' : 'not-allowed';
+  button.title = enabled ? 'Print the verified pen guide' : 'Resolve the plan blocker before printing';
+}
+
+function printPenGuide(){
+  if(!lastPenPlanValid){
+    window.alert('This pen plan is blocked. Edit the selected stack or Units Per Day until it fits the requested daily draws.');
+    return;
+  }
+
+  window.print();
+}
+
+
 function renderLibrary(){
+  renderSelectionSummary();
   const grid = document.getElementById('compGrid');
   
   const filtered = PEPTIDES.filter(p => {
@@ -912,6 +979,7 @@ function setDoseTier(code, tier){
     const item = selectedStack.get(code);
     item.tier = tier;
     item.unitsPerDay = null;
+    lastPenPlanValid = false;
     renderDoseTuning();
   }
 }
@@ -921,6 +989,7 @@ function updateVialMixing(code, newMg, newWater){
     const item = selectedStack.get(code);
     if(newMg !== null && newMg !== '') item.vialMg = parseFloat(newMg) || 1;
     if(newWater !== null && newWater !== '') item.vialWater = parseFloat(newWater) || 1;
+    lastPenPlanValid = false;
     renderDoseTuning();
   }
 }
@@ -930,6 +999,7 @@ function updateUnitsPerDay(code, newUnits){
     const item = selectedStack.get(code);
     const parsedUnits = parseFloat(newUnits);
     item.unitsPerDay = Number.isFinite(parsedUnits) && parsedUnits > 0 ? parsedUnits : null;
+    lastPenPlanValid = false;
     renderDoseTuning();
   }
 }
@@ -1292,9 +1362,74 @@ function renderPenCard(pen, penNum, preferredDailyUnits){
   `;
 }
 
+function buildPenPlanPreflight(scheduleGroups, requestedDailyShots){
+  const dailyAllocation = allocateDailyPenCounts(
+    { AM: scheduleGroups.AM, PM: scheduleGroups.PM },
+    requestedDailyShots
+  );
+  const dailyItems = [...scheduleGroups.AM, ...scheduleGroups.PM];
+  const dailyWeeklyUnits = dailyItems.reduce((sum, item) => sum + item.weeklyUnits, 0);
+  const offenders = [...dailyItems]
+    .sort((a, b) => b.weeklyUnits - a.weeklyUnits)
+    .slice(0, 10);
+
+  return {
+    valid: !dailyAllocation.exceedsRequested,
+    dailyAllocation,
+    dailyItems,
+    dailyWeeklyUnits,
+    requestedWeeklyCapacity: requestedDailyShots * PEN_CAPACITY_UNITS,
+    selectedCount: dailyItems.length + scheduleGroups.Weekly.length,
+    offenders
+  };
+}
+
+function renderBlockedPenPlan(preflight, requestedDailyShots){
+  const offenderRows = preflight.offenders.map(item => `
+    <li style="margin-bottom:5px;">
+      <b>${item.name}</b> (${item.code}):
+      ${formatDoseNumber(item.units)} Units ${item.unitsTimingLabel}
+      <span style="color:var(--muted);">— ${item.isManual ? 'manually entered' : 'unconfirmed BMI estimate'}</span>
+    </li>
+  `).join('');
+
+  return `
+    <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:16px;border-radius:12px;color:#FCA5A5;margin-bottom:16px;">
+      <div style="font-family:'Cinzel',serif;font-size:17px;font-weight:700;margin-bottom:8px;">Plan Blocked — Nothing Was Printed</div>
+      <div style="font-size:12.5px;line-height:1.55;">
+        The current <b>${preflight.selectedCount}-compound stack</b> cannot fit into the requested
+        <b>${requestedDailyShots} daily pen draw${requestedDailyShots === 1 ? '' : 's'}</b>.
+        It requires at least <b>${preflight.dailyAllocation.minimumTotal}</b> daily pens under the current volume, timing, and copper/metabolic rules.
+      </div>
+      <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--gold-light);">
+        Current daily-stack load: ${preflight.dailyWeeklyUnits.toFixed(1)} Units/week ·
+        Requested capacity: ${preflight.requestedWeeklyCapacity.toFixed(1)} Units/week
+      </div>
+    </div>
+
+    <div style="background:var(--panel-raised);border:1px solid var(--hairline);padding:16px;border-radius:12px;margin-bottom:16px;">
+      <div style="font-weight:700;color:var(--gold-light);margin-bottom:8px;">Largest unit targets to review</div>
+      <ul style="font-size:11.5px;line-height:1.5;color:var(--ivory);margin:0;padding-left:18px;">
+        ${offenderRows}
+      </ul>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px;">
+        Go back and remove unintended compounds or enter the intended Units Per Day. Automatic BMI estimates are shown for reference but should not silently create dozens of cartridges.
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn ghost" onclick="navToStep(3)">← Edit Units &amp; Doses</button>
+      <button class="btn ghost" onclick="navToStep(2)">Review Selected Stack</button>
+      <button class="btn" onclick="if(clearSelectedStack()) navToStep(2)">Clear Entire Stack</button>
+    </div>
+  `;
+}
+
 function renderPenBlueprint(){
   const container = document.getElementById('penBlueprintContainer');
   if(!container) return;
+
+  setPrintPenGuideEnabled(false);
 
   if(!selectedStack.size){
     container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px;">No stack available to fill.</div>';
@@ -1328,15 +1463,19 @@ function renderPenBlueprint(){
       vialMg: val.vialMg,
       vialWater: val.vialWater,
       hasCopper: Boolean(peptide.hasCopper),
-      isMetabolic: peptide.cat.includes('Metabolic')
+      isMetabolic: peptide.cat.includes('Metabolic'),
+      isManual: dose.isManual
     });
   });
 
-  const dailyAllocation = allocateDailyPenCounts(
-    { AM: scheduleGroups.AM, PM: scheduleGroups.PM },
-    requestedDailyShots
-  );
+  const preflight = buildPenPlanPreflight(scheduleGroups, requestedDailyShots);
 
+  if(!preflight.valid){
+    container.innerHTML = renderBlockedPenPlan(preflight, requestedDailyShots);
+    return;
+  }
+
+  const dailyAllocation = preflight.dailyAllocation;
   const renderedGroups = [];
   const allocationErrors = [];
 
@@ -1363,15 +1502,6 @@ function renderPenBlueprint(){
 
   let noticesHtml = '';
 
-  if(dailyAllocation.exceedsRequested){
-    noticesHtml += `
-      <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;margin-bottom:12px;">
-        ⚠️ <b>Requested ${requestedDailyShots} daily pen draws, but the minimum is ${dailyAllocation.minimumTotal}.</b>
-        Capacity or the existing copper/metabolic separation requires the additional draw. No timing or compatibility rule was silently overridden.
-      </div>
-    `;
-  }
-
   allocationErrors.forEach(error => {
     noticesHtml += `
       <div style="background:rgba(239,68,68,.15);border:1px solid var(--coral);padding:12px;border-radius:10px;color:#FCA5A5;font-size:12px;margin-bottom:12px;">
@@ -1392,6 +1522,11 @@ function renderPenBlueprint(){
   allPens.forEach((pen, index) => {
     cardsHtml += renderPenCard(pen, index + 1, preferredDailyUnits);
   });
+
+  const planIsValid = allocationErrors.length === 0 &&
+    allPens.every(pen => pen.totalUnits <= PEN_CAPACITY_UNITS + PEN_CAPACITY_EPSILON && !(pen.hasCopper && pen.hasMetabolic));
+
+  setPrintPenGuideEnabled(planIsValid);
 
   container.innerHTML = `
     <div style="background:rgba(16,185,129,.12);border:1px solid var(--teal);padding:14px;border-radius:12px;color:#A7F3D0;font-size:12px;margin-bottom:16px;">
